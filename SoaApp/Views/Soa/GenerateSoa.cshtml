@@ -1,0 +1,377 @@
+﻿@using SoaApp.Utilities;
+
+@{
+    ViewData["Title"] = "GenerateSoa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<table width="100%">
+    <tr>
+        <td>
+            <table id="pttaddress">
+                <tr>
+                    <td>
+                        <img src="~/img/ptt.png" />
+                    </td>
+                    <td>
+                        <br />
+                        <p>
+                            <b>@SD.CompanyName</b><br />
+                            @SD.CompanyStreet @SD.CompanyCity<br />
+                            Tel: @SD.CompanyTellNum <br />
+                            @SD.CompanyTinNum
+                        </p>
+                    </td>
+                </tr>
+            </table> <!--Header-->
+            <table width="100%">
+                <tr></tr>
+                <tr></tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td id="amountleftborder" style="border-right:solid;" colspan="3" class="text-center">
+                        <b>STATEMENT OF ACCOUNT</b> <br />
+                                    Date:
+                                    @SD.GuiAsOf.ToShortDateString()
+                    </td>
+                </tr>
+                <tr>
+                    <td width="150">Customer Name: </td>
+                    <td><b>@SD.CustomerName</b></td>
+                    <td id="tableborderlelt">Previous Balance</td>
+                    <td width="50">PHP</td>
+                    <td id="tableborderright">1,462,140.52</td>
+                </tr>
+                <tr>
+                    <td>Customer Number: </td>
+                    <td>@SD.CustomerNum</td>
+                    <td id="tableborderlelt">Total Payments</td>
+                    <td width="50"></td>
+                    <td id="tableborderright">1,462,140.52</td>
+                </tr>
+                <tr>
+                    <td>Attention to: </td>
+                    <td>@SD.AttentionTo</td>
+                    <td id="tableborderlelt">Total Credit and Debit Memo</td>
+                    <td width="50"></td>
+                    <td id="tableborderright">1,462,140.52</td>
+                </tr>
+                <tr>
+                    <td>Address: </td>
+                    <td width="450">@SD.CustomerStreet @SD.CustomerCity</td>
+                    <td id="tableborderlelt">Current Billings</td>
+                    <td width="50"></td>
+                    <td id="tableborderright">1,462,140.52</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td id="amountleftborder">TOTAL AMOUNT DUE</td>
+                    <td id="amountmidborder" width="50">PHP</td>
+                    <td id="amountrightborder">1,462,140.52</td>
+                </tr>
+            </table> <!--Customer Details-->
+        </td>
+    </tr>
+</table>
+<br />
+<b>Account Summary as of @DateTime.Now.ToLongDateString()</b>
+<br />
+<br />
+<table width="100%">
+    <tr>
+        <td width="1100">
+            Preview Balance
+        </td>
+        <td></td>
+        <td></td>
+        <td width="50">PHP</td>
+        <td width="150">1,462,140.52</td>
+    </tr>
+</table> <!--Account As of/Preview Balance-->
+<br />
+<table width="100%">
+    <tr>
+        <td colspan="5"><b>Payment Details</b></td>
+    </tr>
+    <tr id="tableborderbot">
+        <td width="150">Doc Type</td>
+        <td width="175">Referense No.</td>
+        <td width="150">Date</td>
+        <td width="500">Description</td>
+        <td>Amount(PHP)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr id="tablebordertop">
+        <td><b>Total Payment</b></td>
+        <td colspan="3"></td>
+        <td>(4,500,982.77)</td>
+    </tr>
+</table> <!--Payment Details-->
+<br />
+<br />
+<table width="100%">
+    <tr>
+        <td colspan="5">
+            <b>Unpaid Transactions</b>
+        </td>
+    </tr>
+    <tr id="tableborderbot">
+        <td width="150">Doc Type</td>
+        <td width="175">Referense No.</td>
+        <td width="150">Date</td>
+        <td width="500">Description</td>
+        <td>Amount(PHP)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr id="tablebordertop">
+        <td colspan="3"><b>Total Unpaid Transactions</b></td>
+        <td></td>
+        <td>1,462,140.52</td>
+    </tr>
+</table> <!--Unpaid Details-->
+<br />
+<br />
+<table width="100%">
+    <tr>
+        <td colspan="5">
+            <b>Credit and Debit Memo</b>
+        </td>
+    </tr>
+    <tr id="tableborderbot">
+        <td width="150">Doc Type</td>
+        <td width="175">Referense No.</td>
+        <td width="150">Date</td>
+        <td width="500">Description</td>
+        <td>Amount(PHP)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr id="tablebordertop">
+        <td colspan="3"><b>Total Credit and Debit Memo</b></td>
+        <td></td>
+        <td>1,462,140.52</td>
+    </tr>
+</table> <!--Credit and Debit Memo-->
+<br />
+<br />
+<table width="100%">
+    <tr>
+        <td colspan="5">
+            <b>Withholding Tax</b>
+        </td>
+    </tr>
+    <tr id="tableborderbot">
+        <td width="150">Doc Type</td>
+        <td width="175">Referense No.</td>
+        <td width="150">Date</td>
+        <td width="500">Description</td>
+        <td>Amount(PHP)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr>
+        <td>DZ</td>
+        <td>3100071944</td>
+        <td>08/23/2018</td>
+        <td>Jet A-1 invoices</td>
+        <td>(2,461,824.59)</td>
+    </tr>
+    <tr id="tablebordertop">
+        <td colspan="3"><b>Total Withholding Tax</b></td>
+        <td></td>
+        <td>1,462,140.52</td>
+    </tr>
+</table> <!--Withholding Tax-->
+<br />
+<br />
+<table width="100%" style="border: solid;">
+    <tr>
+        <td width="700" colspan="3">
+            <b>TOTAL AMOUNT DUE</b>
+        </td>
+        <td><b>PHP</b></td>
+        <td><b>1,484,313.77</b></td>
+    </tr>
+</table> <!--Total Amount-->
+<br />
+<br />
+<table width="100%">
+    <tr>
+        <td>
+            Please examine your Statement of Account immediately. If there is no discrepancy reported within 7 days, this will be considered correct.
+        </td>
+    </tr>
+</table> <!--footer -->
+<br />
+<table width="100%">
+    <tr>
+        <td>Legend:</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><b>P1</b> Invoice</td>
+        <td><b>DH</b> Debit Memo - VAT</td>
+        <td><b>DX</b> Cust Payment - Lubes</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><b>P8</b> Credit Memo - VAT</td>
+        <td><b>DM</b> Debit Memo - Non VAT</td>
+        <td><b>DY</b> Cust Payment - Others</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><b>DR</b> Invoice - VAT</td>
+        <td><b>SA</b> G/L Account Document</td>
+        <td><b>DZ</b> Cust Payment - Fuel</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><b>DI</b> Invoice-Non VAT</td>
+        <td><b>AB</b> Gen. Journal Entries</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><b>DG</b> Credit Memo - VAT</td>
+        <td><b>ZZ</b> Data Migration</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><b>DJ</b> Credit Memo - Non VAT</td>
+    </tr>
+</table>
+<br />
+<table width="100%">
+    <tr>
+        <td>Any unpaid charges after due date shall bear an interest rate of 3% and an additional penalty of 3% monthly. All returned checks will be charged a penalty feeof PhP 1,500</td>
+    </tr>
+</table>
+
+<style type="text/css">
+    #amountleftborder {
+        border-top: solid;
+        border-bottom: solid;
+        border-left: solid;
+    }
+
+    #amountmidborder {
+        border-top: solid;
+        border-bottom: solid;
+    }
+
+    #amountrightborder {
+        border-top: solid;
+        border-bottom: solid;
+        border-right: solid;
+    }
+
+    #tableborderlelt {
+        border-left: solid;
+    }
+
+    #tableborderright {
+        border-right: solid;
+    }
+
+    #tableborderbot {
+        border-bottom: 1px solid;
+    }
+
+    #tablebordertop {
+        border-top: 1px solid;
+    }
+</style>
