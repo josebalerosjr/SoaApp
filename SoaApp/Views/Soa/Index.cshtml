@@ -2,46 +2,83 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<form method="post">
-    <div class="row p-3 border">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="col-12 border-bottom">
-            <h2 class="text-primary">Statement of Account</h2>
-        </div>
-        <div class="col-8 pt-4">
-            <div class="form-group row">
-                <div class="col-4">
-                    <label class="float-right">Customer</label>
-                </div>
-                <div class="col-8">
-                    <input id="customer" name="customer" type="number" class="form-control" />
-                </div>
+<div class="container h-100">
+    <div class="row h-100 justify-content-center align-items-center border">
+        <form method="post" class="col-12 text-center">
+            <div class="col-12 border-bottom">
+                <h2 class="text-primary">Statement of Account</h2>
             </div>
-            <div class="form-group row">
-                <div class="col-4">
-                    <label class="float-right">Company Code</label>
+            <div class="col-8 pt-4">
+                <div class="form-group row">
+                    <div class="col-4">
+                        <label class="float-right">Customer</label>
+                    </div>
+                    <div class="col-8">
+                        <input id="customer" name="customer" type="number" class="form-control" />
+                    </div>
                 </div>
-                <div class="col-8">
-                    <input id="company" name="company" type="number" class="form-control" />
+                <div class="form-group row">
+                    <div class="col-4">
+                        <label class="float-right">Company Code</label>
+                    </div>
+                    <div class="col-8">
+                        @*<input id="company" name="company" class="form-control" placeholder="Company Code" />*@
+                        <select id="company" name="company" class="form-control">
+                            <option value="">Select a number</option>
+                            <option value="2000">2000</option>
+                            <option value="3000">3000</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row">
-                <div class="col-4">
-                    <label class="float-right">Statement as of</label>
+                <div class="form-group row">
+                    <div class="col-4">
+                        <label class="float-right">Statement as of</label>
+                    </div>
+                    <div class="col-8">
+                        <input id="asof" name="asof" type="date" class="form-control" />
+                    </div>
                 </div>
-                <div class="col-8">
-                    <input id="asof" name="asof" type="date" class="form-control" />
-                </div>
-            </div>
-            <div class="form-group row">
-                <div class="col-8 offset-4">
-                    <div class="row">
-                        <div class="col">
-                            <button type="submit" class="btn btn-primary form-control" asp-action="GenerateSoa">Generate</button>
+                <div class="form-group row">
+                    <div class="col-8 offset-4">
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" id="btnCheck" class="btn btn-primary form-control" asp-action="GenerateSoa">Generate</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
-</form>
+</div>
+
+@section Scripts {
+    @*<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>*@
+    <script type="text/javascript">
+        $(function () {
+            $('#btnCheck').click(function () {
+                var customerNum = $('#customer');
+                var companyCode = $('#company');
+                var asOfDate = $('#asof');
+
+                if (customerNum.val() == null || customerNum.val() == '') {
+                    swal("Warning", 'Please enter Customer Number', "warning")
+                    return false;
+                } else {
+                    if (companyCode.val() == null || companyCode.val() == '') {
+                        swal("Warning", 'Please select Company Code', "warning")
+                        return false;
+                    } else {
+                        if (asOfDate.val() == null || asOfDate.val() == '') {
+                            swal("Warning", 'Please select a date', "warning")
+                            return false;
+                        } else {
+                            swal("", 'Generating Statement of Account', "success")
+                            return true;
+                        }
+                    }
+                }
+            })
+        });
+    </script>
+}

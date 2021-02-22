@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Intranet.DataAccess.Data;
+﻿using Intranet.DataAccess.Data;
 using Microsoft.AspNetCore.Mvc;
 using SoaApp.Utilities;
+using System;
+using System.Linq;
 
 namespace SoaApp.Controllers
 {
@@ -24,9 +22,9 @@ namespace SoaApp.Controllers
 
         public IActionResult GenerateSoa(int customer, int company, DateTime asof)
         {
-            SD.GuiCustomerNum = customer.ToString();
             SD.GuiCompany = company.ToString();
             SD.GuiAsOf = asof;
+            SD.GuiCustomerNum = customer.ToString();
 
             // Get Address Code
             var t001 = _context.T001s.Where(i => i.BURKS == SD.GuiCompany);
@@ -47,7 +45,7 @@ namespace SoaApp.Controllers
             }
 
             // get Customer details
-            var kna1 =  _context.KNA1s.Where(i => i.KUNNR == SD.GuiCustomerNum);
+            var kna1 = _context.KNA1s.Where(i => i.KUNNR == SD.GuiCustomerNum);
             foreach (var cust in kna1)
             {
                 SD.CustomerName = cust.NAME1;
@@ -63,6 +61,30 @@ namespace SoaApp.Controllers
                 SD.AttentionTo = custo.NAME1;
             }
 
+            // getting CWT
+            var bsid_cwt = _context.BSIDs.Where(i => i.UMSKZ == "C");
+            ViewBag.BSID_CWT = bsid_cwt;
+            foreach (var cwt in bsid_cwt)
+            {
+                SD.WHTotalAmount += Convert.ToDouble(cwt.DMBTR);
+            }
+
+            // getting Unpaid items
+            var bsid_unpaid = _context.BSIDs.Where(i => i.UMSKZ == "").OrderByDescending(e => e.ZFBDT);
+            ViewBag.BSID_UNPAID = bsid_unpaid;
+
+            var bsid_unpaid_items = _context.BSIDs.Where(e => e.UMSKZ == "" && e.BLART != "DJ");
+            foreach (var unpaid in bsid_unpaid_items)
+            {
+                SD.UPAmount += Convert.ToDouble(unpaid.DMBTR);
+            }
+
+            var bsid_unpaid_payments = _context.BSIDs.Where(e => e.UMSKZ == "" && e.BLART == "DJ");
+            foreach (var payments in bsid_unpaid_payments)
+            {
+                SD.PAmount += Convert.ToDouble(payments.DMBTR);
+            }
+            SD.UPTotalAmount = SD.UPAmount - SD.PAmount;
 
             return View();
         }

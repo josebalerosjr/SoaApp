@@ -1,7 +1,8 @@
 ﻿@using SoaApp.Utilities;
+@*@model IEnumerable<SoaApp.Models.BSID>;*@
 
 @{
-    ViewData["Title"] = "GenerateSoa";
+    ViewData["Title"] = "Statement of Account";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -32,8 +33,8 @@
                     <td></td>
                     <td id="amountleftborder" style="border-right:solid;" colspan="3" class="text-center">
                         <b>STATEMENT OF ACCOUNT</b> <br />
-                                    Date:
-                                    @SD.GuiAsOf.ToShortDateString()
+                        Date:
+                        @SD.GuiAsOf.ToShortDateString()
                     </td>
                 </tr>
                 <tr>
@@ -99,6 +100,7 @@
         <td width="150">Doc Type</td>
         <td width="175">Referense No.</td>
         <td width="150">Date</td>
+        <td width="150"></td>
         <td width="500">Description</td>
         <td>Amount(PHP)</td>
     </tr>
@@ -106,6 +108,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -113,6 +116,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -120,6 +124,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -127,6 +132,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -134,6 +140,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -141,6 +148,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -148,6 +156,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -155,6 +164,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -162,12 +172,13 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
     <tr id="tablebordertop">
         <td><b>Total Payment</b></td>
-        <td colspan="3"></td>
+        <td colspan="4"></td>
         <td>(4,500,982.77)</td>
     </tr>
 </table> <!--Payment Details-->
@@ -183,27 +194,41 @@
         <td width="150">Doc Type</td>
         <td width="175">Referense No.</td>
         <td width="150">Date</td>
+        <td width="150">Due Date</td>
         <td width="500">Description</td>
         <td>Amount(PHP)</td>
     </tr>
-    <tr>
-        <td>DZ</td>
-        <td>3100071944</td>
-        <td>08/23/2018</td>
-        <td>Jet A-1 invoices</td>
-        <td>(2,461,824.59)</td>
-    </tr>
-    <tr>
-        <td>DZ</td>
-        <td>3100071944</td>
-        <td>08/23/2018</td>
-        <td>Jet A-1 invoices</td>
-        <td>(2,461,824.59)</td>
-    </tr>
+    @foreach (var unpaid in ViewBag.BSID_UNPAID)
+    {
+        <tr>
+            <td>@unpaid.BLART</td>
+            <td>@unpaid.BELNR</td>
+            <td>@unpaid.BUDAT</td>
+            <td>@unpaid.ZFBDT</td>
+
+            @if (@unpaid.SGTXT == "" || @unpaid.SGTXT == null)
+            {
+                <td>Fuels</td>
+            }
+            else
+            {
+                <td>@unpaid.SGTXT</td>
+            }
+
+            @if (unpaid.BLART == "DJ")
+            {
+                <td>(@unpaid.DMBTR)</td>
+            }
+            else
+            {
+                <td>@unpaid.DMBTR</td>
+            }
+        </tr>
+    }
     <tr id="tablebordertop">
-        <td colspan="3"><b>Total Unpaid Transactions</b></td>
+        <td colspan="4"><b>Total Unpaid Transactions</b></td>
         <td></td>
-        <td>1,462,140.52</td>
+        <td>@SD.UPTotalAmount.ToString("0,0.00")</td>
     </tr>
 </table> <!--Unpaid Details-->
 <br />
@@ -218,6 +243,7 @@
         <td width="150">Doc Type</td>
         <td width="175">Referense No.</td>
         <td width="150">Date</td>
+        <td width="150"></td>
         <td width="500">Description</td>
         <td>Amount(PHP)</td>
     </tr>
@@ -225,6 +251,7 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
@@ -232,11 +259,12 @@
         <td>DZ</td>
         <td>3100071944</td>
         <td>08/23/2018</td>
+        <td></td>
         <td>Jet A-1 invoices</td>
         <td>(2,461,824.59)</td>
     </tr>
     <tr id="tablebordertop">
-        <td colspan="3"><b>Total Credit and Debit Memo</b></td>
+        <td colspan="4"><b>Total Credit and Debit Memo</b></td>
         <td></td>
         <td>1,462,140.52</td>
     </tr>
@@ -249,31 +277,32 @@
             <b>Withholding Tax</b>
         </td>
     </tr>
+
     <tr id="tableborderbot">
         <td width="150">Doc Type</td>
         <td width="175">Referense No.</td>
         <td width="150">Date</td>
+        <td width="150">Due Date</td>
         <td width="500">Description</td>
         <td>Amount(PHP)</td>
     </tr>
-    <tr>
-        <td>DZ</td>
-        <td>3100071944</td>
-        <td>08/23/2018</td>
-        <td>Jet A-1 invoices</td>
-        <td>(2,461,824.59)</td>
-    </tr>
-    <tr>
-        <td>DZ</td>
-        <td>3100071944</td>
-        <td>08/23/2018</td>
-        <td>Jet A-1 invoices</td>
-        <td>(2,461,824.59)</td>
-    </tr>
+
+    @foreach (var cwt in ViewBag.BSID_CWT)
+    {
+        <tr>
+            <td>@cwt.BLART</td>
+            <td>@cwt.KUNNR</td>
+            <td>@cwt.BUDAT</td>
+            <td>@cwt.ZFBDT</td>
+            <td>@cwt.SGTXT</td>
+            <td>@cwt.DMBTR</td>
+        </tr>
+    }
+
     <tr id="tablebordertop">
-        <td colspan="3"><b>Total Withholding Tax</b></td>
+        <td colspan="4"><b>Total Withholding Tax</b></td>
         <td></td>
-        <td>1,462,140.52</td>
+        <td>@SD.WHTotalAmount.ToString("0,0.00")</td>
     </tr>
 </table> <!--Withholding Tax-->
 <br />
