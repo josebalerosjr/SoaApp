@@ -8,5 +8,6 @@ namespace SoaApp.Models.ViewModels
     public class SoaVM
     {
         public BSID BSID { get; set; }
+        public BSAD BSAD { get; set; }
     }
 }

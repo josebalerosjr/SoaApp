@@ -1,4 +1,7 @@
-﻿@{
+﻿@using SoaApp.Utilities;
+@using Microsoft.AspNetCore.Http;
+
+@{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -42,7 +45,14 @@
                     <div class="col-8 offset-4">
                         <div class="row">
                             <div class="col">
-                                <button type="submit" id="btnCheck" class="btn btn-primary form-control" asp-action="GenerateSoa">Generate</button>
+                                <button type="submit" formtarget="_blank" id="btnCheck"
+                                            class="btn btn-primary form-control" asp-action="GenerateSoa">
+                                        Generate
+                                    </button>
+                                @*<button type="submit" formtarget="_blank" id="btnCheck"
+                                        class="btn btn-primary form-control">
+                                    Generate
+                                </button>*@
                             </div>
                         </div>
                     </div>
@@ -53,6 +63,7 @@
 </div>
 
 @section Scripts {
+    @*<script src="~/scripts/soa.js"></script>*@
     @*<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>*@
     <script type="text/javascript">
         $(function () {
