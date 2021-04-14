@@ -1,18 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SoaApp.Models;
+using SoaApp.Models.ViewModels;
 using SoaApp.Utilities;
 
 namespace Intranet.DataAccess.Data
 {
     public class SOADbContext : DbContext
     {
+        public SOADbContext()
+        {
+
+        }
         public SOADbContext(DbContextOptions<SOADbContext> options) : base(options)
         {
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            options.UseSqlServer(SD.SOAConString);
+            options.UseSqlServer(SD.SoaConString);
         }
 
         public DbSet<ADRC> ADRCs { get; set; }
@@ -28,5 +33,6 @@ namespace Intranet.DataAccess.Data
         public DbSet<T001> T001s { get; set; }
         public DbSet<T014> T014s { get; set; }
         public DbSet<T052> T052s { get; set; }
+        public DbSet<Payment> Payments { get; set; }
     }
 }
