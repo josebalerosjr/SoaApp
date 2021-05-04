@@ -34,5 +34,10 @@ namespace Intranet.DataAccess.Data
         public DbSet<T014> T014s { get; set; }
         public DbSet<T052> T052s { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<BKPFNew> BKPFNews{ get; set; }
+        public DbSet<BSADNew> BSADNews{ get; set; }
+        public DbSet<BSEGNew> BSEGNews { get; set; }
+        public DbSet<BSIDNew> BSIDNews { get; set; }
+        public DbSet<R_BKPFNew> R_BKPFNews { get; set; }
     }
 }

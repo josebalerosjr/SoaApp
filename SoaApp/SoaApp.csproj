@@ -8,6 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20210416034704_AddNewTables.cs" />
+    <Compile Remove="Migrations\20210416034704_AddNewTables.Designer.cs" />
+    <Compile Remove="Migrations\20210419091245_UpdatePaymentToDb.cs" />
+    <Compile Remove="Migrations\20210419091245_UpdatePaymentToDb.Designer.cs" />
+    <Compile Remove="Migrations\20210419091408_UpdatePaymentToDbcls.cs" />
+    <Compile Remove="Migrations\20210419091408_UpdatePaymentToDbcls.Designer.cs" />
+    <Compile Remove="Migrations\20210419091601_AddPaymentToDb.cs" />
+    <Compile Remove="Migrations\20210419091601_AddPaymentToDb.Designer.cs" />
+    <Compile Remove="Migrations\20210419091823_AddPaymentToDbV2.cs" />
+    <Compile Remove="Migrations\20210419091823_AddPaymentToDbV2.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
@@ -21,6 +34,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.5" />
+    <PackageReference Include="RestSharp" Version="106.11.7" />
   </ItemGroup>
 
   <ItemGroup>

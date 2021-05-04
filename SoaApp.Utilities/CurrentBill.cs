@@ -6,6 +6,6 @@ namespace SoaApp.Utilities
 {
     public static class CurrentBill
     {
-        private static SOADbContext _context;
+
     }
 }

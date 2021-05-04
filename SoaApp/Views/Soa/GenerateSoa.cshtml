@@ -1,26 +1,27 @@
-﻿@using SoaApp.Utilities;
+﻿@model SoaApp.Models.ViewModels.SoaVM
+@using SoaApp.Utilities
 
 @{
     ViewData["Title"] = "Statement of Account";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<table id="pttAddress" style="margin: 30px;" >
+<table id="pttAddress" style="margin: 30px;">
     <thead>
         <tr>
             <td rowspan="4">
-                <img src="~/img/ptt.png" alt=""/>
+                <img src="~/img/ptt.png" alt="" />
             </td>
-            <td colspan="14"><b>@SD.CompanyName</b></td>
+            <td colspan="14"><b>@Model.Company.Name</b></td>
         </tr> <!-- COMPANY NAME -->
         <tr>
-            <td colspan="14">@SD.CompanyStreet @SD.CompanyCity</td>
+            <td colspan="14">@Model.Company.StreetAddress @Model.Company.CityAddress</td>
         </tr> <!-- COMPANY ADDRESS -->
         <tr>
-            <td colspan="14">Tel: @SD.CompanyTellNum</td>
+            <td colspan="14">Tel: @Model.Company.TelNo</td>
         </tr> <!-- COMPANY CONTACT -->
         <tr>
-            <td colspan="14">@SD.CompanyTinNum</td>
+            <td colspan="14">@Model.Company.TinNo</td>
         </tr> <!-- COMPANY TIN -->
         <tr>
             <td></td>
@@ -45,11 +46,11 @@
             <td style="border-bottom: solid;"></td>
             <td style="border-bottom: solid;"></td>
             <td style="border-bottom: solid;"></td>
-            <td class="text-right" colspan="2"  style="border-bottom: solid; border-right: solid;">@SD.GuiAsOf.ToShortDateString()</td>
+            <td class="text-right" colspan="2" style="border-bottom: solid; border-right: solid;">@Model.Customer.AsOfDate.ToShortDateString()</td>
         </tr> <!-- DATE -->
         <tr>
             <td colspan="2">Customer Name: </td>
-            <td colspan="5"><b>@SD.CustomerName</b></td>
+            <td colspan="5"><b>@Model.Customer.Name</b></td>
             <td style="border-left: solid;" colspan="2">Previous Balance</td>
             <td></td>
             @if (SD.DollarTotal != 0)
@@ -63,18 +64,18 @@
                 <td></td>
             }
             <td>PHP</td>
-            @if (@SD.PreviousBillsTotal == 0)
+            @if (Model.Customer.PreviousBalance == 0)
             {
-                <td>0</td>
+                <td style="border-right: solid">0</td>
             }
             else
             {
-                <td style="border-right: solid">@SD.PreviousBillsTotal.ToString("0,0.00")</td>
+                <td style="border-right: solid">@Model.Customer.PreviousBalance.ToString("0,0.00")</td>
             }
         </tr> <!-- CUSTOMER NAME -->
         <tr>
             <td colspan="2">Customer Number: </td>
-            <td colspan="5">@SD.CustomerNum</td>
+            <td colspan="5">@Model.Customer.Code</td>
             <td style="border-left: solid;" colspan="2">Total Payments</td>
             <td></td>
             <td></td>
@@ -84,7 +85,7 @@
         </tr> <!-- CUSTOMER NUMBER -->
         <tr>
             <td colspan="2">Attention to: </td>
-            <td colspan="5">@SD.AttentionTo</td>
+            <td colspan="5">@Model.Customer.AttentionTo</td>
             <td style="border-left: solid;" colspan="3">Total Credit and Debit Memo</td>
             <td></td>
             <td></td>
@@ -100,7 +101,7 @@
         </tr> <!-- CUSTOMER ATTENTION TO -->
         <tr>
             <td colspan="2">Address: </td>
-            <td colspan="5">@SD.CustomerStreet @SD.CustomerCity</td>
+            <td colspan="5">@Model.Customer.StreetAddress @Model.Customer.CityAddress</td>
             <td style="border-left: solid;" colspan="2">Current Billings</td>
             <td></td>
             <td></td>
@@ -138,18 +139,18 @@
             }
             @if (@SD.TotalAmountDue == 0)
             {
-                <td style="border-bottom: solid; border-top: solid; border-right: solid" >0</td>
+                <td style="border-bottom: solid; border-top: solid; border-right: solid">0</td>
             }
             else
             {
-                <td style="border-bottom: solid;  border-top: solid; border-right: solid" >@SD.TotalAmountDue.ToString("0,0.00")</td>
+                <td style="border-bottom: solid;  border-top: solid; border-right: solid">@SD.TotalAmountDue.ToString("0,0.00")</td>
             }
         </tr> <!-- TOTAL AMOUNT DUE -->
         <tr>
             <td colspan="14">&nbsp;</td>
         </tr> <!-- SPACER -->
         <tr>
-            <td colspan="14"><b>Account Summary as of @SD.GuiAsOf.ToLongDateString()</b></td>
+            <td colspan="14"><b>Account Summary as of @Model.Customer.AsOfDate.ToLongDateString()</b></td>
         </tr> <!-- ACCOUNT SUMMARY AS OF -->
         <tr>
             <td colspan="14">&nbsp;</td>
@@ -168,13 +169,13 @@
                 <td></td>
                 <td></td>
             }
-            @if (@SD.PreviousBillsTotal == 0)
+            @if (Model.Customer.PreviousBalance == 0)
             {
                 <td>0</td>
             }
             else
             {
-                <td>@SD.PreviousBillsTotal.ToString("0,0.00")</td>
+                <td>@Model.Customer.PreviousBalance.ToString("0,0.00")</td>
             }
         </tr> <!-- PREVIOUS BALANCE -->
         <tr>
@@ -203,7 +204,7 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- PAYMENT DETAILS HEADER -->
-        @foreach (var payments in ViewBag.DxDyDz)
+        @*@foreach (var payments in ViewBag.DxDyDz)
         {
             <tr>
                 <td class="text-center">@payments.BLART</td>
@@ -240,7 +241,7 @@
                     <td>@payments.DMBTR</td>
                 }
             </tr>
-        }  <!-- PAYMENT DETAILS ITEM LOOP -->
+        }*@  <!-- PAYMENT DETAILS ITEM LOOP -->
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Payment</b></td>
             @if (SD.DollarTotal != 0)
@@ -282,7 +283,7 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- UNPAID TRANSACTION HEADER -->
-        @foreach (var unpaid in ViewBag.BSID_UNPAID)
+        @*@foreach (var unpaid in ViewBag.BSID_UNPAID)
         {
             <tr>
                 <td class="text-center">@unpaid.BLART</td>
@@ -317,7 +318,7 @@
                     <td>@unpaid.DMBTR</td>
                 }
             </tr>
-        } <!-- UNPAID TRANSACTION ITEM LOOP-->
+        } *@<!-- UNPAID TRANSACTION ITEM LOOP-->
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Unpaid Transactions</b></td>
             @if (SD.DollarTotal != 0)
@@ -359,7 +360,7 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- CREDIT AND DEBIT MEMO HEADER -->
-        @foreach (var cmDm in ViewBag.BSID_CMDM)
+        @*@foreach (var cmDm in ViewBag.BSID_CMDM)
         {
             <tr>
                 <td class="text-center">@cmDm.BLART</td>
@@ -387,7 +388,7 @@
                     <td>@cmDm.DMBTR</td>
                 }
             </tr>
-        } <!-- CREDIT AND DEBIT MEMO ITEM LOOP -->
+        } *@<!-- CREDIT AND DEBIT MEMO ITEM LOOP -->
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Credit and Debit Memo</b></td>
             @if (SD.DollarTotal != 0)
@@ -429,7 +430,7 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- WITHHOLDING TAX HEADER -->
-        @foreach (var cwt in ViewBag.BSID_CWT)
+        @*@foreach (var cwt in ViewBag.BSID_CWT)
         {
             <tr>
                 <td class="text-center">@cwt.BLART</td>
@@ -458,7 +459,7 @@
                     <td>@cwt.DMBTR</td>
                 }
             </tr>
-        } <!-- WITHHOLDING TAX ITEM LOOP -->
+        } *@<!-- WITHHOLDING TAX ITEM LOOP -->
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Withholding Tax</b></td>
             @if (SD.DollarTotal != 0)
@@ -478,7 +479,7 @@
         <tr>
             <td colspan="14">&nbsp;</td>
         </tr> <!-- SPACER -->
-    <tr>
+        <tr>
             <td colspan="10" style="border-bottom: solid; border-top: solid; border-left: solid;"><b>TOTAL AMOUNT DUE</b></td>
             @if (SD.DollarTotal != 0)
             {

@@ -4,14 +4,16 @@ using Intranet.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SoaApp.Migrations
 {
     [DbContext(typeof(SOADbContext))]
-    partial class SOADbContextModelSnapshot : ModelSnapshot
+    [Migration("20210416085129_UpdateBsidNewDb")]
+    partial class UpdateBsidNewDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1712,8 +1714,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("BDIFF")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BELNR")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("BELNR")
+                        .HasColumnType("int");
 
                     b.Property<string>("BLART")
                         .HasColumnType("nvarchar(max)");
@@ -1895,8 +1897,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("KOSTL")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("KUNNR")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("KUNNR")
+                        .HasColumnType("int");
 
                     b.Property<string>("LANDL")
                         .HasColumnType("nvarchar(max)");
@@ -3554,11 +3556,11 @@ namespace SoaApp.Migrations
                     b.Property<string>("BLART")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("BLDAT")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("BLDAT")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("BSCHL")
-                        .HasColumnType("int");
+                    b.Property<string>("BSCHL")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BSTAT")
                         .HasColumnType("nvarchar(max)");
@@ -3566,14 +3568,14 @@ namespace SoaApp.Migrations
                     b.Property<string>("BTYPE")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("BUDAT")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("BUDAT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BUDGET_PD")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("BUKRS")
-                        .HasColumnType("int");
+                    b.Property<string>("BUKRS")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BUPLA")
                         .HasColumnType("nvarchar(max)");
@@ -3632,8 +3634,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("DMBT3")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("DMBTR")
-                        .HasColumnType("float");
+                    b.Property<string>("DMBTR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DTWS1")
                         .HasColumnType("nvarchar(max)");
@@ -3680,8 +3682,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("GEBER")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GJAHR")
-                        .HasColumnType("int");
+                    b.Property<string>("GJAHR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GMVKZ")
                         .HasColumnType("nvarchar(max)");
@@ -3695,8 +3697,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("HBKID")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("HKONT")
-                        .HasColumnType("int");
+                    b.Property<string>("HKONT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("HKTID")
                         .HasColumnType("nvarchar(max)");
@@ -3758,8 +3760,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("MNDID")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MONAT")
-                        .HasColumnType("int");
+                    b.Property<string>("MONAT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MSCHL")
                         .HasColumnType("nvarchar(max)");
@@ -3863,8 +3865,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("RSTGR")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SAKNR")
-                        .HasColumnType("int");
+                    b.Property<string>("SAKNR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SAMNR")
                         .HasColumnType("nvarchar(max)");
@@ -3947,8 +3949,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("WRBT3")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("WRBTR")
-                        .HasColumnType("float");
+                    b.Property<string>("WRBTR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WSKTO")
                         .HasColumnType("nvarchar(max)");
@@ -4022,8 +4024,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("ZBFIX")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ZFBDT")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ZFBDT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ZINKZ")
                         .HasColumnType("nvarchar(max)");

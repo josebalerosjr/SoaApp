@@ -1,6 +1,9 @@
 ﻿using Intranet.DataAccess.Data;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using RestSharp;
 using SoaApp.Models;
+using SoaApp.Models.ViewModels;
 using SoaApp.Utilities;
 using System;
 using System.Linq;
@@ -10,6 +13,9 @@ namespace SoaApp.Controllers
     public class SoaController : Controller
     {
         private readonly SOADbContext _context;
+
+        [BindProperty]
+        public SoaVM SoaVM { get; set; }
 
         public SoaController(SOADbContext context)
         {
@@ -21,35 +27,793 @@ namespace SoaApp.Controllers
             return View();
         }
 
+        public IActionResult Success()
+        {
+            return View();
+        }
+
+        public IActionResult Failed()
+        {
+            return View();
+        }
+
+        private IRestResponse PostSoa(SoaParams soaParams)
+        {
+            var SoaJson = JsonConvert.SerializeObject(soaParams);
+
+            var client = new RestClient(SD.ApiUri);
+            client.Timeout = -1;
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddParameter("application/json", "[\r\n" + SoaJson + "\r\n]\r\n", ParameterType.RequestBody);
+            IRestResponse response = client.Execute(request);
+            return response;
+        }
+
+        [HttpPost]
+        public IActionResult Index2(string company, string customer, string asof)
+        {
+            // Create new instance of Person
+            SoaParams soaParams = new SoaParams
+            {
+                Posting_Date = asof,
+                Company_Code = company,
+                Customer_Number = customer
+            };
+
+            return View(PostSoa(soaParams));
+        }
+
         public IActionResult GenerateSoa(string customer, int company, DateTime asof)
         {
+            //SD.DollarTotal = 1;
+
+            SoaVM = new SoaVM()
+            {
+                Customer = new Models.Customer(),
+                Company = new Models.Company()
+            };
+
+            SoaVM.Customer.AsOfDate = asof;
+
             ClearVariables();
 
-            //SD.DollarTotal = 1;
-            
-            SD.GuiCompany = company.ToString();
-            SD.GuiCustomerNum = customer;
-            SD.GuiAsOf = asof;
-            
-            GetCompanyDetails();
-            
-            GetCustomerDetails();
-            
-            ClearDbTables();
-            
-            GetPaymentsData();
+            GetCustomerDetails(customer);
 
-            GetCurrentPreviousBill(asof);
+            GetCompanyDetails(company);
 
-            GetUnpaidDetails();
-
-            GetCreditDebitDetails();
-
-            GetCwtDetails();
-
-            GetTotalAmountDue();
+            ClearDbTables();    
             
-            return View();
+            //GetAllBkpfAndPutToNewDb();
+            //GetAllBsegAndPutToNewDb();
+            //GetAllRBkpfAndPutToNewDb();
+            //GetAllBsadAndPutToNewDb();
+            GetAllBsidAndPutToNewDb();
+
+            SoaVM.Customer.PreviousBalance = GetPreviousBalance();
+
+            //GetPaymentsData(asof);
+
+            //GetCwtDetails();
+
+            //GetCurrentPreviousBill(asof);
+
+            //GetUnpaidDetails();
+
+            //GetCreditDebitDetails();
+
+            //GetTotalAmountDue();
+
+            return View(SoaVM);
+        }
+
+        private double GetPreviousBalance()
+        {
+            var previousBill = _context.BSIDNews.Where(i => i.KUNNR == SoaVM.Customer.Code);
+
+            foreach (var bill in previousBill)
+            {
+                if (bill.BUDAT <= DateMangement.GetPreviousMonthLastDay(SoaVM.Customer.AsOfDate))
+                {
+                    if (bill.SHKZG == "S")
+                    {
+                        SoaVM.Customer.PreviousBalance += bill.WRBTR;
+                    }
+                    //else
+                    //{
+                    //    SD.PreviousBillsTotal -= Convert.ToDouble(bill.WRBTR);
+                    //}
+                }
+            }
+
+            return SoaVM.Customer.PreviousBalance;
+        }
+
+        public void GetAllBkpfAndPutToNewDb()
+        {
+            var bKPFs = _context.BKPFs;
+            foreach (var item in bKPFs)
+            {
+                var bkpfnew = new BKPFNew
+                {
+                    BUKRS = Convert.ToInt16(item.BUKRS),
+                    BELNR = Convert.ToInt32(item.BELNR),
+                    GJAHR = Convert.ToInt32(item.GJAHR),
+                    BLART = item.BLART,
+                    BLDAT = Convert.ToDateTime(item.BLDAT),
+                    BUDAT = Convert.ToDateTime(item.BUDAT),
+                    MONAT = Convert.ToInt32(item.MONAT),
+                    CPUDT = item.CPUDT,
+                    CPUTM = item.CPUTM,
+                    AEDAT = item.AEDAT,
+                    UPDDT = item.UPDDT,
+                    WWERT = item.WWERT,
+                    USNAM = item.USNAM,
+                    TCODE = item.TCODE,
+                    BVORG = item.BVORG,
+                    XBLNR = item.XBLNR,
+                    DBBLG = item.DBBLG,
+                    STBLG = item.STBLG,
+                    STJAH = item.STJAH,
+                    BKTXT = item.BKTXT,
+                    WAERS = item.WAERS,
+                    KURSF = item.KURSF,
+                    KZWRS = item.KZWRS,
+                    KZKRS = item.KZKRS,
+                    BSTAT = item.BSTAT,
+                    XNETB = item.XNETB,
+                    FRATH = item.FRATH,
+                    XRUEB = item.XRUEB,
+                    GLVOR = item.GLVOR,
+                    GRPID = item.GRPID,
+                    DOKID = item.DOKID,
+                    ARCID = item.ARCID,
+                    IBLAR = item.IBLAR,
+                    AWTYP = item.AWTYP,
+                    AWKEY = item.AWKEY,
+                    FIKRS = item.FIKRS,
+                    HWAER = item.HWAER,
+                    HWAE2 = item.HWAE2,
+                    HWAE3 = item.HWAE3,
+                    KURS2 = item.KURS2,
+                    KURS3 = item.KURS3,
+                    BASW2 = item.BASW2,
+                    BASW3 = item.BASW3,
+                    UMRD2 = item.UMRD2,
+                    UMRD3 = item.UMRD3,
+                    XSTOV = item.XSTOV,
+                    STODT = item.STODT,
+                    XMWST = item.XMWST,
+                    CURT2 = item.CURT2,
+                    CURT3 = item.CURT3,
+                    KUTY2 = item.KUTY2,
+                    KUTY3 = item.KUTY3,
+                    XSNET = item.XSNET,
+                    AUSBK = item.AUSBK,
+                    XUSVR = item.XUSVR,
+                    DUEFL = item.DUEFL,
+                    AWSYS = item.AWSYS,
+                    TXKRS = item.TXKRS,
+                    CTXKRS = item.CTXKRS,
+                    LOTKZ = item.LOTKZ,
+                    XWVOF = item.XWVOF,
+                    STGRD = item.STGRD,
+                    PPNAM = item.PPNAM,
+                    PPDAT = item.PPDAT,
+                    PPTME = item.PPTME,
+                    PPTCOD = item.PPTCOD,
+                    BRNCH = item.BRNCH,
+                    NUMPG = item.NUMPG,
+                    ADISC = item.ADISC,
+                    XREF1_HD = item.XREF1_HD,
+                    XREF2_HD = item.XREF2_HD,
+                    XREVERSAL = item.XREVERSAL,
+                    REINDAT = item.REINDAT,
+                    RLDNR = item.RLDNR,
+                    LDGRP = item.LDGRP,
+                    PROPMANO = item.PROPMANO,
+                    XBLNR_ALT = item.XBLNR_ALT,
+                    VATDATE = item.VATDATE,
+                    DOCCAT = item.DOCCAT,
+                    XSPLIT = item.XSPLIT,
+                    CASH_ALLOC = item.CASH_ALLOC,
+                    FOLLOW_ON = item.FOLLOW_ON,
+                    XREORG = item.XREORG,
+                    SUBSET = item.SUBSET,
+                    KURST = item.KURST,
+                    KURSX = item.KURSX,
+                    KUR2X = item.KUR2X,
+                    KUR3X = item.KUR3X,
+                    XMCA = item.XMCA,
+                    RESUBMISSION = item.RESUBMISSION,
+                    SAPF15_STATUS = item.SAPF15_STATUS,
+                    PSOTY = item.PSOTY,
+                    PSOAK = item.PSOAK,
+                    PSOKS = item.PSOKS,
+                    PSOSG = item.PSOSG,
+                    PSOFN = item.PSOFN,
+                    PSOBT = item.PSOBT,
+                    PSOZL = item.PSOZL,
+                    PSODT = item.PSODT,
+                    PSOTM = item.PSOTM,
+                    FM_UMART = item.FM_UMART,
+                    CCINS = item.CCINS,
+                    CCNUM = item.CCNUM,
+                    SSBLK = item.SSBLK,
+                    BATCH = item.BATCH,
+                    SNAME = item.SNAME,
+                    SAMPLED = item.SAMPLED,
+                    EXCLUDE_FLAG = item.EXCLUDE_FLAG,
+                    BLIND = item.BLIND,
+                    OFFSET_STATUS = item.OFFSET_STATUS,
+                    OFFSET_REFER_DAT = item.OFFSET_REFER_DAT,
+                    PENRC = item.PENRC,
+                    KNUMV = item.KNUMV,
+                    OINETNUM = item.OINETNUM,
+                    OINJAHR = item.OINJAHR,
+                    OININD = item.OININD,
+                    RECHN = item.RECHN,
+                    PYBASTYP = item.PYBASTYP,
+                    PYBASNO = item.PYBASNO,
+                    PYBASDAT = item.PYBASDAT,
+                    PYIBAN = item.PYIBAN,
+                    INWARDNO_HD = item.INWARDNO_HD,
+                    INWARDDT_HD = item.INWARDDT_HD
+                };
+                _context.BKPFNews.Add(bkpfnew);
+            }
+
+            _context.SaveChanges();
+        }
+
+        public void GetAllBsadAndPutToNewDb()
+        {
+            var bSADs = _context.BSADs;
+            foreach (var item in bSADs)
+            {
+                var bsadnew = new BSADNew
+                {
+                    BUKRS = Convert.ToInt32(item.BUKRS),
+                    KUNNR = item.KUNNR,
+                    UMSKS = item.UMSKS,
+                    UMSKZ = item.UMSKZ,
+                    AUGDT = item.AUGDT,
+                    AUGBL = item.AUGBL,
+                    ZUONR = item.ZUONR,
+                    GJAHR = Convert.ToInt32(item.GJAHR),
+                    BELNR = item.BELNR,
+                    BUZEI = item.BUZEI,
+                    BUDAT = Convert.ToDateTime(item.BUDAT),
+                    BLDAT = Convert.ToDateTime(item.BLDAT),
+                    CPUDT = item.CPUDT,
+                    WAERS = item.WAERS,
+                    XBLNR = item.XBLNR,
+                    BLART = item.BLART,
+                    MONAT = Convert.ToInt32(item.MONAT),
+                    BSCHL = Convert.ToInt32(item.BSCHL),
+                    ZUMSK = item.ZUMSK,
+                    SHKZG = item.SHKZG,
+                    GSBER = item.GSBER,
+                    MWSKZ = item.MWSKZ,
+                    DMBTR = Convert.ToDouble(item.DMBTR),
+                    WRBTR = Convert.ToDouble(item.WRBTR),
+                    MWSTS = item.MWSTS,
+                    WMWST = item.WMWST,
+                    BDIFF = item.BDIFF,
+                    BDIF2 = item.BDIF2,
+                    SGTXT = item.SGTXT,
+                    PROJN = item.PROJN,
+                    AUFNR = item.AUFNR,
+                    ANLN1 = item.ANLN1,
+                    ANLN2 = item.ANLN2,
+                    SAKNR = Convert.ToInt32(item.SAKNR),
+                    HKONT = Convert.ToInt32(item.HKONT),
+                    FKONT = item.FKONT,
+                    FILKD = item.FILKD,
+                    ZFBDT = Convert.ToDateTime(item.ZFBDT),
+                    ZTERM = item.ZTERM,
+                    ZBD1T = item.ZBD1T,
+                    ZBD2T = item.ZBD2T,
+                    ZBD3T = item.ZBD3T,
+                    ZBD1P = item.ZBD1P,
+                    ZBD2P = item.ZBD2P,
+                    SKFBT = item.SKFBT,
+                    SKNTO = item.SKNTO,
+                    WSKTO = item.WSKTO,
+                    ZLSCH = item.ZLSCH,
+                    ZLSPR = item.ZLSPR,
+                    ZBFIX = item.ZBFIX,
+                    HBKID = item.HBKID,
+                    BVTYP = item.BVTYP,
+                    REBZG = item.REBZG,
+                    REBZJ = item.REBZJ,
+                    REBZZ = item.REBZZ,
+                    SAMNR = item.SAMNR,
+                    ANFBN = item.ANFBN,
+                    ANFBJ = item.ANFBJ,
+                    ANFBU = item.ANFBU,
+                    ANFAE = item.ANFAE,
+                    MANSP = item.MANSP,
+                    MSCHL = item.MSCHL,
+                    MADAT = item.MADAT,
+                    MANST = item.MANST,
+                    MABER = item.MABER,
+                    XNETB = item.XNETB,
+                    XANET = item.XANET,
+                    XCPDD = item.XCPDD,
+                    XINVE = item.XINVE,
+                    XZAHL = item.XZAHL,
+                    MWSK1 = item.MWSK1,
+                    DMBT1 = item.DMBT1,
+                    WRBT1 = item.WRBT1,
+                    MWSK2 = item.MWSK2,
+                    DMBT2 = item.DMBT2,
+                    WRBT2 = item.WRBT2,
+                    MWSK3 = item.MWSK3,
+                    DMBT3 = item.DMBT3,
+                    WRBT3 = item.WRBT3,
+                    BSTAT = item.BSTAT,
+                    VBUND = item.VBUND,
+                    VBELN = item.VBELN,
+                    REBZT = item.REBZT,
+                    INFAE = item.INFAE,
+                    STCEG = item.STCEG,
+                    EGBLD = item.EGBLD,
+                    EGLLD = item.EGLLD,
+                    RSTGR = item.RSTGR,
+                    XNOZA = item.XNOZA,
+                    VERTT = item.VERTT,
+                    VERTN = item.VERTN,
+                    VBEWA = item.VBEWA,
+                    WVERW = item.WVERW,
+                    PROJK = item.PROJK,
+                    FIPOS = item.FIPOS,
+                    NPLNR = item.NPLNR,
+                    AUFPL = item.AUFPL,
+                    APLZL = item.APLZL,
+                    XEGDR = item.XEGDR,
+                    DMBE2 = item.DMBE2,
+                    DMBE3 = item.DMBE3,
+                    DMB21 = item.DMB21,
+                    DMB22 = item.DMB22,
+                    DMB23 = item.DMB23,
+                    DMB31 = item.DMB31,
+                    DMB32 = item.DMB32,
+                    DMB33 = item.DMB33,
+                    BDIF3 = item.BDIF3,
+                    XRAGL = item.XRAGL,
+                    UZAWE = item.UZAWE,
+                    XSTOV = item.XSTOV,
+                    MWST2 = item.MWST2,
+                    MWST3 = item.MWST3,
+                    SKNT2 = item.SKNT2,
+                    SKNT3 = item.SKNT3,
+                    XREF1 = item.XREF1,
+                    XREF2 = item.XREF2,
+                    XARCH = item.XARCH,
+                    PSWSL = item.PSWSL,
+                    PSWBT = item.PSWBT,
+                    LZBKZ = item.LZBKZ,
+                    LANDL = item.LANDL,
+                    IMKEY = item.IMKEY,
+                    VBEL2 = item.VBEL2,
+                    VPOS2 = item.VPOS2,
+                    POSN2 = item.POSN2,
+                    ETEN2 = item.ETEN2,
+                    FISTL = item.FISTL,
+                    GEBER = item.GEBER,
+                    DABRZ = item.DABRZ,
+                    XNEGP = item.XNEGP,
+                    KOSTL = item.KOSTL,
+                    RFZEI = item.RFZEI,
+                    KKBER = item.KKBER,
+                    EMPFB = item.EMPFB,
+                    PRCTR = item.PRCTR,
+                    XREF3 = item.XREF3,
+                    QSSKZ = item.QSSKZ,
+                    ZINKZ = item.ZINKZ,
+                    DTWS1 = item.DTWS1,
+                    DTWS2 = item.DTWS2,
+                    DTWS3 = item.DTWS3,
+                    DTWS4 = item.DTWS4,
+                    XPYPR = item.XPYPR,
+                    KIDNO = item.KIDNO,
+                    ABSBT = item.ABSBT,
+                    CCBTC = item.CCBTC,
+                    PYCUR = item.PYCUR,
+                    PYAMT = item.PYAMT,
+                    BUPLA = item.BUPLA,
+                    SECCO = item.SECCO,
+                    CESSION_KZ = item.CESSION_KZ,
+                    PPDIFF = item.PPDIFF,
+                    PPDIF2 = item.PPDIF2,
+                    PPDIF3 = item.PPDIF3,
+                    KBLNR = item.KBLNR,
+                    KBLPOS = item.KBLPOS,
+                    GRANT_NBR = item.GRANT_NBR,
+                    GMVKZ = item.GMVKZ,
+                    SRTYPE = item.SRTYPE,
+                    LOTKZ = item.LOTKZ,
+                    FKBER = item.FKBER,
+                    PPRCT = item.PPRCT,
+                    BUZID = item.BUZID,
+                    AUGGJ = item.AUGGJ,
+                    HKTID = item.HKTID,
+                    BUDGET_PD = item.BUDGET_PD,
+                    PAYS_PROV = item.PAYS_PROV,
+                    PAYS_TRAN = item.PAYS_TRAN,
+                    MNDID = item.MNDID,
+                    KONTT = item.KONTT,
+                    KONTL = item.KONTL,
+                    UEBGDAT = item.UEBGDAT,
+                    VNAME = item.VNAME,
+                    EGRUP = item.EGRUP,
+                    BTYPE = item.BTYPE,
+                    OIEXGNUM = item.OIEXGNUM,
+                    OINETCYC = item.OINETCYC,
+                    OIEXGTYP = item.OIEXGTYP,
+                    PROPMANO = item.PROPMANO
+                };
+                _context.BSADNews.Add(bsadnew);
+            }
+
+            _context.SaveChanges();
+        }
+
+        public void GetAllBsegAndPutToNewDb()
+        {
+            var bSEGs = _context.BSEGs;
+
+            foreach (var item in bSEGs)
+            {
+                var bsegnew = new BSEGNew
+                {
+                    BUKRS = Convert.ToInt32(item.BUKRS),
+                    BELNR = Convert.ToInt32(item.BELNR),
+                    GJAHR = Convert.ToInt32(item.GJAHR),
+                    KOART = item.KOART,
+                    BUZEI = item.BUZEI,
+                    HKONT = Convert.ToInt32(item.HKONT),
+                    SGTXT = item.SGTXT,
+                    SHKZG = item.SHKZG,
+                    DMBTR = Convert.ToDouble(item.DMBTR),
+                    WRBTR = Convert.ToDouble(item.WRBTR)
+                };
+                _context.BSEGNews.Add(bsegnew);
+            }
+
+            _context.SaveChanges();
+        }
+
+        public void GetAllBsidAndPutToNewDb()
+        {
+            var bSIDs = _context.BSIDs.Where(i => i.KUNNR == SoaVM.Customer.Code);
+            foreach (var item in bSIDs)
+            {
+                var bsidnew = new BSIDNew
+                {
+                    BUKRS = Convert.ToInt32(item.BUKRS),
+                    KUNNR = item.KUNNR,
+                    UMSKS = item.UMSKS,
+                    UMSKZ = item.UMSKZ,
+                    AUGDT = item.AUGDT,
+                    AUGBL = item.AUGBL,
+                    ZUONR = item.ZUONR,
+                    GJAHR = Convert.ToInt32(item.GJAHR),
+                    BELNR = item.BELNR,
+                    BUZEI = item.BUZEI,
+                    BUDAT = Convert.ToDateTime(item.BUDAT),
+                    BLDAT = Convert.ToDateTime(item.BLDAT),
+                    CPUDT = item.CPUDT,
+                    WAERS = item.WAERS,
+                    XBLNR = item.XBLNR,
+                    BLART = item.BLART,
+                    MONAT = Convert.ToInt32(item.MONAT),
+                    BSCHL = Convert.ToInt32(item.BSCHL),
+                    ZUMSK = item.ZUMSK,
+                    SHKZG = item.SHKZG,
+                    GSBER = item.GSBER,
+                    MWSKZ = item.MWSKZ,
+                    DMBTR = Convert.ToDouble(item.DMBTR),
+                    WRBTR = Convert.ToDouble(item.WRBTR),
+                    MWSTS = item.MWSTS,
+                    WMWST = item.WMWST,
+                    BDIFF = item.BDIFF,
+                    BDIF2 = item.BDIF2,
+                    SGTXT = item.SGTXT,
+                    PROJN = item.PROJN,
+                    AUFNR = item.AUFNR,
+                    ANLN1 = item.ANLN1,
+                    ANLN2 = item.ANLN2,
+                    SAKNR = Convert.ToInt32(item.SAKNR),
+                    HKONT = Convert.ToInt32(item.HKONT),
+                    FKONT = item.FKONT,
+                    FILKD = item.FILKD,
+                    ZFBDT = Convert.ToDateTime(item.ZFBDT),
+                    ZTERM = item.ZTERM,
+                    ZBD1T = item.ZBD1T,
+                    ZBD2T = item.ZBD2T,
+                    ZBD3T = item.ZBD3T,
+                    ZBD1P = item.ZBD1P,
+                    ZBD2P = item.ZBD2P,
+                    SKFBT = item.SKFBT,
+                    SKNTO = item.SKNTO,
+                    WSKTO = item.WSKTO,
+                    ZLSCH = item.ZLSCH,
+                    ZLSPR = item.ZLSPR,
+                    ZBFIX = item.ZBFIX,
+                    HBKID = item.HBKID,
+                    BVTYP = item.BVTYP,
+                    REBZG = item.REBZG,
+                    REBZJ = item.REBZJ,
+                    REBZZ = item.REBZZ,
+                    SAMNR = item.SAMNR,
+                    ANFBN = item.ANFBN,
+                    ANFBJ = item.ANFBJ,
+                    ANFBU = item.ANFBU,
+                    ANFAE = item.ANFAE,
+                    MANSP = item.MANSP,
+                    MSCHL = item.MSCHL,
+                    MADAT = item.MADAT,
+                    MANST = item.MANST,
+                    MABER = item.MABER,
+                    XNETB = item.XNETB,
+                    XANET = item.XANET,
+                    XCPDD = item.XCPDD,
+                    XINVE = item.XINVE,
+                    XZAHL = item.XZAHL,
+                    MWSK1 = item.MWSK1,
+                    DMBT1 = item.DMBT1,
+                    WRBT1 = item.WRBT1,
+                    MWSK2 = item.MWSK2,
+                    DMBT2 = item.DMBT2,
+                    WRBT2 = item.WRBT2,
+                    MWSK3 = item.MWSK3,
+                    DMBT3 = item.DMBT3,
+                    WRBT3 = item.WRBT3,
+                    BSTAT = item.BSTAT,
+                    VBUND = item.VBUND,
+                    VBELN = item.VBELN,
+                    REBZT = item.REBZT,
+                    INFAE = item.INFAE,
+                    STCEG = item.STCEG,
+                    EGBLD = item.EGBLD,
+                    EGLLD = item.EGLLD,
+                    RSTGR = item.RSTGR,
+                    XNOZA = item.XNOZA,
+                    VERTT = item.VERTT,
+                    VERTN = item.VERTN,
+                    VBEWA = item.VBEWA,
+                    WVERW = item.WVERW,
+                    PROJK = item.PROJK,
+                    FIPOS = item.FIPOS,
+                    NPLNR = item.NPLNR,
+                    AUFPL = item.AUFPL,
+                    APLZL = item.APLZL,
+                    XEGDR = item.XEGDR,
+                    DMBE2 = item.DMBE2,
+                    DMBE3 = item.DMBE3,
+                    DMB21 = item.DMB21,
+                    DMB22 = item.DMB22,
+                    DMB23 = item.DMB23,
+                    DMB31 = item.DMB31,
+                    DMB32 = item.DMB32,
+                    DMB33 = item.DMB33,
+                    BDIF3 = item.BDIF3,
+                    XRAGL = item.XRAGL,
+                    UZAWE = item.UZAWE,
+                    XSTOV = item.XSTOV,
+                    MWST2 = item.MWST2,
+                    MWST3 = item.MWST3,
+                    SKNT2 = item.SKNT2,
+                    SKNT3 = item.SKNT3,
+                    XREF1 = item.XREF1,
+                    XREF2 = item.XREF2,
+                    XARCH = item.XARCH,
+                    PSWSL = item.PSWSL,
+                    PSWBT = item.PSWBT,
+                    LZBKZ = item.LZBKZ,
+                    LANDL = item.LANDL,
+                    IMKEY = item.IMKEY,
+                    VBEL2 = item.VBEL2,
+                    VPOS2 = item.VPOS2,
+                    POSN2 = item.POSN2,
+                    ETEN2 = item.ETEN2,
+                    FISTL = item.FISTL,
+                    GEBER = item.GEBER,
+                    DABRZ = item.DABRZ,
+                    XNEGP = item.XNEGP,
+                    KOSTL = item.KOSTL,
+                    RFZEI = item.RFZEI,
+                    KKBER = item.KKBER,
+                    EMPFB = item.EMPFB,
+                    PRCTR = item.PRCTR,
+                    XREF3 = item.XREF3,
+                    QSSKZ = item.QSSKZ,
+                    ZINKZ = item.ZINKZ,
+                    DTWS1 = item.DTWS1,
+                    DTWS2 = item.DTWS2,
+                    DTWS3 = item.DTWS3,
+                    DTWS4 = item.DTWS4,
+                    XPYPR = item.XPYPR,
+                    KIDNO = item.KIDNO,
+                    ABSBT = item.ABSBT,
+                    CCBTC = item.CCBTC,
+                    PYCUR = item.PYCUR,
+                    PYAMT = item.PYAMT,
+                    BUPLA = item.BUPLA,
+                    SECCO = item.SECCO,
+                    CESSION_KZ = item.CESSION_KZ,
+                    PPDIFF = item.PPDIFF,
+                    PPDIF2 = item.PPDIF2,
+                    PPDIF3 = item.PPDIF3,
+                    KBLNR = item.KBLNR,
+                    KBLPOS = item.KBLPOS,
+                    GRANT_NBR = item.GRANT_NBR,
+                    GMVKZ = item.GMVKZ,
+                    SRTYPE = item.SRTYPE,
+                    LOTKZ = item.LOTKZ,
+                    FKBER = item.FKBER,
+                    PPRCT = item.PPRCT,
+                    BUZID = item.BUZID,
+                    AUGGJ = item.AUGGJ,
+                    HKTID = item.HKTID,
+                    BUDGET_PD = item.BUDGET_PD,
+                    PAYS_PROV = item.PAYS_PROV,
+                    PAYS_TRAN = item.PAYS_TRAN,
+                    MNDID = item.MNDID,
+                    KONTT = item.KONTT,
+                    KONTL = item.KONTL,
+                    UEBGDAT = item.UEBGDAT,
+                    VNAME = item.VNAME,
+                    EGRUP = item.EGRUP,
+                    BTYPE = item.BTYPE,
+                    OIEXGNUM = item.OIEXGNUM,
+                    OINETCYC = item.OINETCYC,
+                    OIEXGTYP = item.OIEXGTYP,
+                    PROPMANO = item.PROPMANO
+                };
+                _context.BSIDNews.Add(bsidnew);
+            }
+
+            _context.SaveChanges();
+        }
+
+        private void GetAllRBkpfAndPutToNewDb()
+        {
+            var r_BKPFs = _context.R_BKPFs;
+            foreach (var item in r_BKPFs)
+            {
+                var r_bkpfnew = new R_BKPFNew
+                {
+                    BUKRS = Convert.ToInt32(item.BUKRS),
+                    BELNR = Convert.ToInt32(item.BELNR),
+                    GJAHR = Convert.ToInt32(item.GJAHR),
+                    BLART = item.BLART,
+                    BLDAT = Convert.ToDateTime(item.BLDAT),
+                    BUDAT = Convert.ToDateTime(item.BUDAT),
+                    MONAT = Convert.ToInt32(item.MONAT),
+                    CPUDT = item.CPUDT,
+                    CPUTM = item.CPUTM,
+                    AEDAT = item.AEDAT,
+                    UPDDT = item.UPDDT,
+                    WWERT = item.WWERT,
+                    USNAM = item.USNAM,
+                    TCODE = item.TCODE,
+                    BVORG = item.BVORG,
+                    XBLNR = item.XBLNR,
+                    DBBLG = item.DBBLG,
+                    STBLG = item.STBLG,
+                    STJAH = item.STJAH,
+                    BKTXT = item.BKTXT,
+                    WAERS = item.WAERS,
+                    KURSF = item.KURSF,
+                    KZWRS = item.KZWRS,
+                    KZKRS = item.KZKRS,
+                    BSTAT = item.BSTAT,
+                    XNETB = item.XNETB,
+                    FRATH = item.FRATH,
+                    XRUEB = item.XRUEB,
+                    GLVOR = item.GLVOR,
+                    GRPID = item.GRPID,
+                    DOKID = item.DOKID,
+                    ARCID = item.ARCID,
+                    IBLAR = item.IBLAR,
+                    AWTYP = item.AWTYP,
+                    AWKEY = item.AWKEY,
+                    FIKRS = item.FIKRS,
+                    HWAER = item.HWAER,
+                    HWAE2 = item.HWAE2,
+                    HWAE3 = item.HWAE3,
+                    KURS2 = item.KURS2,
+                    KURS3 = item.KURS3,
+                    BASW2 = item.BASW2,
+                    BASW3 = item.BASW3,
+                    UMRD2 = item.UMRD2,
+                    UMRD3 = item.UMRD3,
+                    XSTOV = item.XSTOV,
+                    STODT = item.STODT,
+                    XMWST = item.XMWST,
+                    CURT2 = item.CURT2,
+                    CURT3 = item.CURT3,
+                    KUTY2 = item.KUTY2,
+                    KUTY3 = item.KUTY3,
+                    XSNET = item.XSNET,
+                    AUSBK = item.AUSBK,
+                    XUSVR = item.XUSVR,
+                    DUEFL = item.DUEFL,
+                    AWSYS = item.AWSYS,
+                    TXKRS = item.TXKRS,
+                    CTXKRS = item.CTXKRS,
+                    LOTKZ = item.LOTKZ,
+                    XWVOF = item.XWVOF,
+                    STGRD = item.STGRD,
+                    PPNAM = item.PPNAM,
+                    PPDAT = item.PPDAT,
+                    PPTME = item.PPTME,
+                    PPTCOD = item.PPTCOD,
+                    BRNCH = item.BRNCH,
+                    NUMPG = item.NUMPG,
+                    ADISC = item.ADISC,
+                    XREF1_HD = item.XREF1_HD,
+                    XREF2_HD = item.XREF2_HD,
+                    XREVERSAL = item.XREVERSAL,
+                    REINDAT = item.REINDAT,
+                    RLDNR = item.RLDNR,
+                    LDGRP = item.LDGRP,
+                    PROPMANO = item.PROPMANO,
+                    XBLNR_ALT = item.XBLNR_ALT,
+                    VATDATE = item.VATDATE,
+                    DOCCAT = item.DOCCAT,
+                    XSPLIT = item.XSPLIT,
+                    CASH_ALLOC = item.CASH_ALLOC,
+                    FOLLOW_ON = item.FOLLOW_ON,
+                    XREORG = item.XREORG,
+                    SUBSET = item.SUBSET,
+                    KURST = item.KURST,
+                    KURSX = item.KURSX,
+                    KUR2X = item.KUR2X,
+                    KUR3X = item.KUR3X,
+                    XMCA = item.XMCA,
+                    RESUBMISSION = item.RESUBMISSION,
+                    SAPF15_STATUS = item.SAPF15_STATUS,
+                    PSOTY = item.PSOTY,
+                    PSOAK = item.PSOAK,
+                    PSOKS = item.PSOKS,
+                    PSOSG = item.PSOSG,
+                    PSOFN = item.PSOFN,
+                    PSOBT = item.PSOBT,
+                    PSOZL = item.PSOZL,
+                    PSODT = item.PSODT,
+                    PSOTM = item.PSOTM,
+                    FM_UMART = item.FM_UMART,
+                    CCINS = item.CCINS,
+                    CCNUM = item.CCNUM,
+                    SSBLK = item.SSBLK,
+                    BATCH = item.BATCH,
+                    SNAME = item.SNAME,
+                    SAMPLED = item.SAMPLED,
+                    EXCLUDE_FLAG = item.EXCLUDE_FLAG,
+                    BLIND = item.BLIND,
+                    OFFSET_STATUS = item.OFFSET_STATUS,
+                    OFFSET_REFER_DAT = item.OFFSET_REFER_DAT,
+                    PENRC = item.PENRC,
+                    KNUMV = item.KNUMV,
+                    OINETNUM = item.OINETNUM,
+                    OINJAHR = item.OINJAHR,
+                    OININD = item.OININD,
+                    RECHN = item.RECHN,
+                    PYBASTYP = item.PYBASTYP,
+                    PYBASNO = item.PYBASNO,
+                    PYBASDAT = item.PYBASDAT,
+                    PYIBAN = item.PYIBAN,
+                    INWARDNO_HD = item.INWARDNO_HD,
+                    INWARDDT_HD = item.INWARDDT_HD
+                };
+                _context.R_BKPFNews.Add(r_bkpfnew);
+            }
+
+            _context.SaveChanges();
         }
 
         private void GetTotalAmountDue()
@@ -57,18 +821,15 @@ namespace SoaApp.Controllers
             SD.TotalAmountDue = ((SD.UpTotalAmount + SD.WhTotalAmount) + SD.DebitCreditTotalAmount) - SD.TotalPayments;
         }
 
-        private void GetCurrentPreviousBill(DateTime AsOfDate)
+        private void GetCurrentPreviousBill(DateTime asof)
         {
-            var currentPrevBill = _context.BSIDs
-                .Where(i => (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                            (i.KUNNR == SD.CustomerNum)
-                );
+            var currentPrevBill = _context.BSIDNews
+                .Where(i => i.KUNNR == SoaVM.Customer.Code);
 
             // Current Bills
             foreach (var bill in currentPrevBill)
             {
-                SD.DateBudat = Convert.ToDateTime(bill.BUDAT);
-                if (SD.DateBudat >= DateMangement.GetFirstDayOfCurrentMonth(AsOfDate) && SD.DateBudat <= SD.GuiAsOf)
+                if (bill.BUDAT >= DateMangement.GetFirstDayOfCurrentMonth(asof) && bill.BUDAT <= asof)
                 {
                     if (bill.SHKZG == "S")
                     {
@@ -83,8 +844,7 @@ namespace SoaApp.Controllers
 
             foreach (var bill in currentPrevBill)
             {
-                SD.DateBudat = Convert.ToDateTime(bill.BUDAT);
-                if (SD.DateBudat <= Convert.ToDateTime(DateMangement.GetPreviousMonthLastDay(AsOfDate)))
+                if (bill.BUDAT <= DateMangement.GetPreviousMonthLastDay(asof))
                 {
                     if (bill.SHKZG == "S")
                     {
@@ -96,15 +856,15 @@ namespace SoaApp.Controllers
                     }
                 }
             }
-            
-            SD.PreviousBillsTotal += SD.WhTotalAmount;
+            //SD.PreviousBillsTotal += SD.WhTotalAmount;
+            //SD.PreviousBillsTotal += SD.WhTotalAmount;
         }
 
         private void GetCreditDebitDetails()
         {
             // get all credit and debit from table
             var bsidCmdm = _context.BSIDs.Where(i => (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                                        (i.KUNNR == SD.CustomerNum) &&
+                                                        (i.KUNNR == SoaVM.Customer.Code) &&
                                                         (i.BLART == "P8" ||
                                                             i.BLART == "DG" ||
                                                             i.BLART == "DJ" ||
@@ -112,11 +872,11 @@ namespace SoaApp.Controllers
                                                             i.BLART == "DM"));
             // put list of cwt items to the webpage
             ViewBag.BSID_CMDM = bsidCmdm;
-            
+
             // get all credit items
             var bsidCredit = _context.BSIDs.Where(i =>
                                     (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                    (i.KUNNR == SD.CustomerNum) &&
+                                    (i.KUNNR == SoaVM.Customer.Code) &&
                                     (i.SHKZG == "H") &&
                                     (i.BLART == "P8" ||
                                         i.BLART == "DG" ||
@@ -131,7 +891,7 @@ namespace SoaApp.Controllers
             // get all debit items
             var bsidDebit = _context.BSIDs.Where(i =>
                                     (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                    (i.KUNNR == SD.CustomerNum) &&
+                                    (i.KUNNR == SoaVM.Customer.Code) &&
                                     (i.SHKZG == "S") &&
                                     (i.BLART == "DH" || i.BLART == "DM"));
 
@@ -149,7 +909,7 @@ namespace SoaApp.Controllers
         {
             //getting Unpaid items
             var unpaidItems = _context.BSIDs.Where(i => (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                                        (i.KUNNR == SD.CustomerNum) &&
+                                                        (i.KUNNR == SoaVM.Customer.Code) &&
                                                         !(i.BLART == "P8" ||
                                                           i.BLART == "DG" ||
                                                           i.BLART == "DJ" ||
@@ -173,55 +933,12 @@ namespace SoaApp.Controllers
             }
 
             SD.UpTotalAmount = SD.UpAmount - SD.PAmount;
-
-        }
-
-        private void GetCompanyDetails()
-        {
-            //Get Address Code
-            var t001 = _context.T001s.Where(i => i.BURKS == SD.GuiCompany);
-            foreach (var comp in t001)
-            {
-                SD.AddressCode = comp.ADRNR;
-                SD.CompanyTinNum = comp.STCEG;
-            }
-            
-            //Company Details
-            var adrc = _context.ADRCs.Where(i => i.ADDRNUMBER == SD.AddressCode);
-            foreach (var compa in adrc)
-            {
-                SD.CompanyName = compa.NAME1;
-                SD.CompanyTellNum = compa.TEL_NUMBER;
-                SD.CompanyCity = compa.CITY1;
-                SD.CompanyStreet = compa.STREET + " ";
-            }
-        }
-
-        private void GetCustomerDetails()
-        {
-            //get Customer details
-            var kna1 = _context.KNA1s.Where(i => i.KUNNR == SD.GuiCustomerNum);
-            foreach (var cust in kna1)
-            {
-                SD.CustomerNum = cust.KUNNR;
-                SD.CustomerName = cust.NAME1;
-                SD.CustomerCity = cust.ORT01;
-                SD.CustomerStreet = cust.STRAS + " ";
-            }
-
-            //Get Customer Number and Attention To
-            var knvk = _context.KNVKs.Where(i => i.KUNNR == SD.GuiCustomerNum);
-            foreach (var custo in knvk)
-            {
-                SD.CustomerNum = custo.KUNNR;
-                SD.AttentionTo = custo.NAME1;
-            }
         }
 
         private void GetCwtDetails()
         {
             // get all cwt from database
-            var bsidCwt = _context.BSIDs.Where(i => (i.UMSKZ == "C") && (i.KUNNR == SD.CustomerNum));
+            var bsidCwt = _context.BSIDs.Where(i => (i.UMSKZ == "C") && (i.KUNNR == SoaVM.Customer.Code));
 
             // put list of cwt items to the webpage
             ViewBag.BSID_CWT = bsidCwt;
@@ -239,7 +956,6 @@ namespace SoaApp.Controllers
                 }
                 SD.WhTotalAmount = SD.WhUnpaidAmount - SD.WhPaidAmount;
             }
-
         }
 
         private void PaymentComputation()
@@ -247,7 +963,7 @@ namespace SoaApp.Controllers
             var bsidBsad = _context.Payments
                 .Where(i =>
                         (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                        (i.KUNNR == SD.CustomerNum) &&
+                        (i.KUNNR == SoaVM.Customer.Code) &&
                         (
                             i.BLART == "DX" ||
                             i.BLART == "DY" ||
@@ -268,17 +984,17 @@ namespace SoaApp.Controllers
 
             SD.TotalPayments = SD.UnpaidPayments - SD.PaidPayments;
         }
-        
-        private void GetPaymentsData()
+
+        private void GetPaymentsData(DateTime asof)
         {
-            AddBsadToPaymentTable();
-            AddBsidToPaymentTable();
+            AddBsadToPaymentTable(asof);
+            AddBsidToPaymentTable(asof);
             PaymentComputation();
-            
+
             var bsidBsad = _context.Payments
                 .Where(i =>
                         (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                        (i.KUNNR == SD.CustomerNum) &&
+                        (i.KUNNR == SoaVM.Customer.Code) &&
                         (
                             i.BLART == "DX" ||
                             i.BLART == "DY" ||
@@ -288,35 +1004,46 @@ namespace SoaApp.Controllers
 
             ViewBag.DxDyDz = bsidBsad;
         }
-        
+
         private void ClearDbTables()
         {
-            var bsidBsadDel = _context.Payments
-                .Where(i =>
-                    (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                    (i.KUNNR == SD.CustomerNum) &&
-                    (
-                        i.BLART == "DX" ||
-                        i.BLART == "DY" ||
-                        i.BLART == "DZ"
-                    ));
+            var payments = _context.Payments;
+            var bkpfNewDel = _context.BKPFNews;
+            var bsadNewDel = _context.BSADNews;
+            var bsegNewDel = _context.BSEGNews;
+            var bsidNewDel = _context.BSIDNews;
+            var rBkpfNewDel = _context.R_BKPFNews;
 
-            foreach (var item in bsidBsadDel)
-            {
-                _context.Payments.Remove(item);
-            }
+            //foreach (var item in payments) { _context.Payments.Remove(item); }
+            //_context.SaveChanges();
+            //foreach (var item in bkpfNewDel) { _context.BKPFNews.Remove(item); }
+            //_context.SaveChanges();
+            //foreach (var item in bsadNewDel) { _context.BSADNews.Remove(item); }
+            //_context.SaveChanges();
+            //foreach (var item in bsegNewDel) { _context.BSEGNews.Remove(item); }
+            //_context.SaveChanges();
+            foreach (var item in bsidNewDel) { _context.BSIDNews.Remove(item); }
             _context.SaveChanges();
+            //foreach (var item in rBkpfNewDel) { _context.R_BKPFNews.Remove(item); }
+            //_context.SaveChanges();
 
             ViewBag.DxDyDz = null;
         }
-        
-        private void AddBsadToPaymentTable()
+
+        private void AddBsadToPaymentTable(DateTime asof)
         {
-            var bsadDxdydz = _context.BSADs
+            SoaVM = new SoaVM()
+            {
+                Customer = new Models.Customer()
+            };
+
+            var testdata = SoaVM.Customer.Code;
+
+            var bsadDxdydz = _context.BSADNews
                 .Where(i =>
                         (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                        (i.GJAHR == Convert.ToString(SD.GuiAsOf.Year)) &&
-                        (i.KUNNR == SD.CustomerNum) &&
+                        (i.GJAHR == asof.Year) &&
+                        (i.KUNNR == SoaVM.Customer.Code) &&
                         (
                             i.BLART == "DX" ||
                             i.BLART == "DY" ||
@@ -510,20 +1237,19 @@ namespace SoaApp.Controllers
                     PROPMANO = bsad.PROPMANO
                 };
 
-
                 _context.Add(payment);
             }
 
             _context.SaveChanges();
         }
-        
-        private void AddBsidToPaymentTable()
+
+        private void AddBsidToPaymentTable(DateTime asof)
         {
-            var bsidDxdydz = _context.BSIDs
+            var bsidDxdydz = _context.BSIDNews
                .Where(i =>
                        (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                       (i.GJAHR == Convert.ToString(SD.GuiAsOf.Year)) &&
-                       (i.KUNNR == SD.CustomerNum) &&
+                       (i.GJAHR == asof.Year) &&
+                       (i.KUNNR == SoaVM.Customer.Code) &&
                        (
                            i.BLART == "DX" ||
                            i.BLART == "DY" ||
@@ -720,7 +1446,7 @@ namespace SoaApp.Controllers
             }
             _context.SaveChanges();
         }
-        
+
         private static void ClearVariables()
         {
             SD.WhTotalAmount = 0;
@@ -737,23 +1463,57 @@ namespace SoaApp.Controllers
             SD.CurrentBillsTotal = 0;
             SD.PreviousBillsTotal = 0;
             SD.DollarTotal = 0;
-            SD.GuiCompany = "";
-            SD.GuiCustomerNum = "";
-            SD.AddressCode = "";
-            SD.CompanyTinNum = "";
-            SD.CompanyName = "";
-            SD.CompanyTellNum = "";
-            SD.CompanyCity = "";
-            SD.CompanyStreet = "";
-            SD.CustomerName = "";
-            SD.CustomerCity = "";
-            SD.CustomerStreet = "";
-            SD.CustomerNum = "";
-            SD.AttentionTo = "";
-            SD.GuiCustomerNumSelected = "";
-            //SD.PreviousMonthLastDay = 0;
             SD.WhPaidAmount = 0;
             SD.WhUnpaidAmount = 0;
         }
+
+        #region Final Functions
+
+        private void GetCompanyDetails(int companyCode)
+        {
+            //Get Address Code
+            var t001 = _context.T001s.Where(i => i.BURKS == Convert.ToString(companyCode));
+
+            var addressCode = "";
+            foreach (var comp in t001)
+            {
+                addressCode = comp.ADRNR;
+                SoaVM.Company.TinNo = comp.STCEG;
+            }
+
+            //Company Details
+            var adrc = _context.ADRCs.Where(i => i.ADDRNUMBER == addressCode);
+            foreach (var compa in adrc)
+            {
+                SoaVM.Company.Name = compa.NAME1;
+                SoaVM.Company.TelNo = compa.TEL_NUMBER;
+                SoaVM.Company.StreetAddress = compa.STREET + " ";
+                SoaVM.Company.CityAddress = compa.CITY1;
+            }
+        }
+
+        private void GetCustomerDetails(string customerNumber)
+        {
+            //get Customer details
+            var kna1 = _context.KNA1s.Where(i => i.KUNNR == customerNumber);
+
+            foreach (var cust in kna1)
+            {
+                SoaVM.Customer.Code = cust.KUNNR;
+                SoaVM.Customer.Name = cust.NAME1;
+                SoaVM.Customer.StreetAddress = cust.STRAS + " ";
+                SoaVM.Customer.CityAddress = cust.ORT01;
+            }
+
+            //Get Customer Number and Attention To
+            var knvk = _context.KNVKs.Where(i => i.KUNNR == customerNumber);
+
+            foreach (var custo in knvk)
+            {
+                SoaVM.Customer.AttentionTo = custo.NAME1;
+            }
+        }
+
+        #endregion Final Functions
     }
 }

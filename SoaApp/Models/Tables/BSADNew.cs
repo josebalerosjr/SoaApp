@@ -1,36 +1,39 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace SoaApp.Models
 {
-    public class Payment
+    public class BSADNew
     {
         [Key]
         public int Id { get; set; }
-
-        public string BUKRS { get; set; }
+        public int BUKRS { get; set; }
         public string KUNNR { get; set; }
         public string UMSKS { get; set; }
         public string UMSKZ { get; set; }
         public string AUGDT { get; set; }
         public string AUGBL { get; set; }
         public string ZUONR { get; set; }
-        public string GJAHR { get; set; }
+        public int GJAHR { get; set; }
         public string BELNR { get; set; }
         public string BUZEI { get; set; }
-        public string BUDAT { get; set; }
-        public string BLDAT { get; set; }
+        public DateTime BUDAT { get; set; }
+        public DateTime BLDAT { get; set; }
         public string CPUDT { get; set; }
         public string WAERS { get; set; }
         public string XBLNR { get; set; }
         public string BLART { get; set; }
-        public string MONAT { get; set; }
-        public string BSCHL { get; set; }
+        public int MONAT { get; set; }
+        public int BSCHL { get; set; }
         public string ZUMSK { get; set; }
         public string SHKZG { get; set; }
         public string GSBER { get; set; }
         public string MWSKZ { get; set; }
-        public string DMBTR { get; set; }
-        public string WRBTR { get; set; }
+        public double DMBTR { get; set; }
+        public double WRBTR { get; set; }
         public string MWSTS { get; set; }
         public string WMWST { get; set; }
         public string BDIFF { get; set; }
@@ -40,11 +43,11 @@ namespace SoaApp.Models
         public string AUFNR { get; set; }
         public string ANLN1 { get; set; }
         public string ANLN2 { get; set; }
-        public string SAKNR { get; set; }
-        public string HKONT { get; set; }
+        public int SAKNR { get; set; }
+        public int HKONT { get; set; }
         public string FKONT { get; set; }
         public string FILKD { get; set; }
-        public string ZFBDT { get; set; }
+        public DateTime ZFBDT { get; set; }
         public string ZTERM { get; set; }
         public string ZBD1T { get; set; }
         public string ZBD2T { get; set; }

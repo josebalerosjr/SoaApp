@@ -4,14 +4,16 @@ using Intranet.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SoaApp.Migrations
 {
     [DbContext(typeof(SOADbContext))]
-    partial class SOADbContextModelSnapshot : ModelSnapshot
+    [Migration("20210416035928_AddBsidNewTableToDb")]
+    partial class AddBsidNewTableToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1712,8 +1714,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("BDIFF")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BELNR")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("BELNR")
+                        .HasColumnType("int");
 
                     b.Property<string>("BLART")
                         .HasColumnType("nvarchar(max)");
@@ -1895,8 +1897,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("KOSTL")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("KUNNR")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("KUNNR")
+                        .HasColumnType("int");
 
                     b.Property<string>("LANDL")
                         .HasColumnType("nvarchar(max)");
@@ -2906,8 +2908,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("BDIFF")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BELNR")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("BELNR")
+                        .HasColumnType("int");
 
                     b.Property<string>("BLART")
                         .HasColumnType("nvarchar(max)");
@@ -3089,8 +3091,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("KOSTL")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("KUNNR")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("KUNNR")
+                        .HasColumnType("int");
 
                     b.Property<string>("LANDL")
                         .HasColumnType("nvarchar(max)");
@@ -3554,11 +3556,11 @@ namespace SoaApp.Migrations
                     b.Property<string>("BLART")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("BLDAT")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("BLDAT")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("BSCHL")
-                        .HasColumnType("int");
+                    b.Property<string>("BSCHL")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BSTAT")
                         .HasColumnType("nvarchar(max)");
@@ -3566,14 +3568,14 @@ namespace SoaApp.Migrations
                     b.Property<string>("BTYPE")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("BUDAT")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("BUDAT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BUDGET_PD")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("BUKRS")
-                        .HasColumnType("int");
+                    b.Property<string>("BUKRS")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BUPLA")
                         .HasColumnType("nvarchar(max)");
@@ -3632,8 +3634,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("DMBT3")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("DMBTR")
-                        .HasColumnType("float");
+                    b.Property<string>("DMBTR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DTWS1")
                         .HasColumnType("nvarchar(max)");
@@ -3680,8 +3682,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("GEBER")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GJAHR")
-                        .HasColumnType("int");
+                    b.Property<string>("GJAHR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GMVKZ")
                         .HasColumnType("nvarchar(max)");
@@ -3695,8 +3697,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("HBKID")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("HKONT")
-                        .HasColumnType("int");
+                    b.Property<string>("HKONT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("HKTID")
                         .HasColumnType("nvarchar(max)");
@@ -3758,8 +3760,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("MNDID")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MONAT")
-                        .HasColumnType("int");
+                    b.Property<string>("MONAT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MSCHL")
                         .HasColumnType("nvarchar(max)");
@@ -3863,8 +3865,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("RSTGR")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SAKNR")
-                        .HasColumnType("int");
+                    b.Property<string>("SAKNR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SAMNR")
                         .HasColumnType("nvarchar(max)");
@@ -3947,8 +3949,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("WRBT3")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("WRBTR")
-                        .HasColumnType("float");
+                    b.Property<string>("WRBTR")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WSKTO")
                         .HasColumnType("nvarchar(max)");
@@ -4022,8 +4024,8 @@ namespace SoaApp.Migrations
                     b.Property<string>("ZBFIX")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ZFBDT")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ZFBDT")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ZINKZ")
                         .HasColumnType("nvarchar(max)");
@@ -4433,393 +4435,6 @@ namespace SoaApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("R_BKPFs");
-                });
-
-            modelBuilder.Entity("SoaApp.Models.R_BKPFNew", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ADISC")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AEDAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ARCID")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AUSBK")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AWKEY")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AWSYS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AWTYP")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BASW2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BASW3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BATCH")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("BELNR")
-                        .HasColumnType("int");
-
-                    b.Property<string>("BKTXT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BLART")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("BLDAT")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("BLIND")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BRNCH")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BSTAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("BUDAT")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("BUKRS")
-                        .HasColumnType("int");
-
-                    b.Property<string>("BVORG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CASH_ALLOC")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CCINS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CCNUM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CPUDT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CPUTM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CTXKRS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CURT2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CURT3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DBBLG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DOCCAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DOKID")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DUEFL")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EXCLUDE_FLAG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FIKRS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FM_UMART")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FOLLOW_ON")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FRATH")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GJAHR")
-                        .HasColumnType("int");
-
-                    b.Property<string>("GLVOR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GRPID")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HWAE2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HWAE3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HWAER")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IBLAR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("INTDATE")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("INTFORM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("INWARDDT_HD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("INWARDNO_HD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KNUMV")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KUR2X")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KUR3X")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KURS2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KURS3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KURSF")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KURST")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KURSX")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KUTY2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KUTY3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KZKRS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KZWRS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LDGRP")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LOTKZ")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MONAT")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NUMPG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OFFSET_REFER_DAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OFFSET_STATUS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OINETNUM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OININD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OINJAHR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PENRC")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PPDAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PPNAM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PPTCOD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PPTME")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PROPMANO")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOAK")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOBT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSODT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOFN")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOKS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOSG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOTM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOTY")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PSOZL")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PYBASDAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PYBASNO")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PYBASTYP")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PYIBAN")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RECHN")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("REINDAT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RESUBMISSION")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RLDNR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SAMPLED")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SAPF15_STATUS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SNAME")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SSBLK")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("STBLG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("STGRD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("STJAH")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("STODT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SUBSET")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TCODE")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TXKRS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UMRD2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UMRD3")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UPDDT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("USNAM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VATDATE")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WAERS")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WWERT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XBLNR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XBLNR_ALT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XMCA")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XMWST")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XNETB")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XREF1_HD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XREF2_HD")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XREORG")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XREVERSAL")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XRUEB")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XSNET")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XSPLIT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XSTOV")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XUSVR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("XWVOF")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("R_BKPFNews");
                 });
 
             modelBuilder.Entity("SoaApp.Models.T001", b =>
