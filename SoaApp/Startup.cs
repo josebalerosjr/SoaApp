@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SoaApp.Repository;
+using SoaApp.Repository.IRepository;
 
 namespace SoaApp
 {
@@ -26,6 +28,7 @@ namespace SoaApp
         {
             var Conn_soa = Configuration.GetConnectionString("DevConnection");
 
+            services.AddScoped<IBapiRepository, BapiRepository>();
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
 
