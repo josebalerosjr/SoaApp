@@ -1,24 +1,24 @@
-﻿using Intranet.DataAccess.Data;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Internal;
+using SoaApp.Models;
 using SoaApp.Models.ViewModels;
 using SoaApp.Repository.IRepository;
 using SoaApp.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SoaApp.Controllers
 {
     public class SoaController : Controller
     {
-        private readonly SOADbContext _context;
         private readonly IBapiRepository _bapi;
 
         [BindProperty]
         public SoaVM SoaVM { get; set; }
 
-        public SoaController(SOADbContext context, IBapiRepository bapi)
+        public SoaController(IBapiRepository bapi)
         {
-            _context = context;
             _bapi = bapi;
         }
 
@@ -35,22 +35,168 @@ namespace SoaApp.Controllers
                 Company = new Models.Company()
             };
 
-            SoaVM.Posting_Date = asof.ToShortDateString();
-            SoaVM.Customer_Number = customer;
-            SoaVM.Company_Code = company;
-            SoaVM.PreviewMonthLastDay = DateMangement.GetPreviousMonthLastDay(Convert.ToDateTime(SoaVM.Posting_Date)).ToShortDateString();
+            #region Soa Parameters
 
-            // Get Previous Balance
-            SoaVM.PreviousBalance = GetPreviousBalance(SoaVM, SoaVM.PreviewMonthLastDay);
+            SoaVM.Posting_Date = asof.ToShortDateString();      // setting AS OF DATE
+            SoaVM.Customer_Number = customer;                   // setting CUSTOMER NO
+            SoaVM.Company_Code = company;                       // setting COMPANY CODE
 
+            // setting Previous Month Lastday
+            SoaVM.PreviewMonthLastDay = DateMangement.GetPreviousMonthLastDay(
+                                            Convert.ToDateTime(SoaVM.Posting_Date))
+                                            .ToShortDateString();
 
+            // setting current perion first day
+            SoaVM.Date_From = DateMangement.GetFirstDayOfCurrentMonth(
+                                                Convert.ToDateTime(SoaVM.Posting_Date))
+                                                .ToShortDateString();
+
+            #endregion Soa Parameters
+
+            #region API Calls
+
+            SoaVM.OpenItemsAsOfDate = GetOpenItemsAsOfDate();
+            SoaVM.OpenItemsPreviousMonth = GetOpenItemsPreviousMonth();
+            SoaVM.StatementCurrentMonth = GetStatementCurrentMonth();
+
+            #endregion API Calls
+
+            #region Previous Balance
+
+            SoaVM.PreviousBalance = GetPreviousBalance();  // Get Previous Balance
+
+            #endregion Previous Balance
+
+            #region Current Billings
+
+            SoaVM.TotalCurrentBillings = GetCurrentBillings();
+
+            #endregion Current Billings
+
+            #region Payments
+
+            SoaVM.PaymentsListItem = GetPaymentsList();     // setting Payment Lists
+            SoaVM.TotalPayments = GetTotalPayments();       // setting  total payments
+
+            #endregion Payments
+
+            #region Unpaid
+
+            SoaVM.UnpaidListItem = GetUnpaidItems();
+            SoaVM.TotalUnpaid = GetUnpaidTotal();
+
+            #endregion Unpaid
+
+            #region Credit And Debit
+
+            SoaVM.CreditAndDebitList = GetCreditAndDebitList();
+
+            SoaVM.TotalCreditAndDebit = GetTotalCreditAndDebit();
+
+            #endregion Credit And Debit
+
+            #region CWT
+
+            SoaVM.UncollectedCwtList = GetUncollectedCwtList();         // setting list of uncollected CWT
+            SoaVM.TotalUncollectedCwtPhp = GetTotalUncollectedCwtPhp();   // setting total uncollected CWT
+            SoaVM.TotalUncollectedCwtUsd = GetTotalUncollectedCwtUsd();   // setting total uncollected CWT
+
+            #endregion CWT
 
             return View(SoaVM);
         }
 
-        private double GetPreviousBalance(SoaVM soaVM, string date)
+        //private void GetCompanyDetails(int companyCode)
+        //{
+        //    //Get Address Code
+        //    var t001 = _context.T001s.Where(i => i.BURKS == Convert.ToString(companyCode));
+
+        //    var addressCode = "";
+        //    foreach (var comp in t001)
+        //    {
+        //        addressCode = comp.ADRNR;
+        //        SoaVM.Company.TinNo = comp.STCEG;
+        //    }
+
+        //    //Company Details
+        //    var adrc = _context.ADRCs.Where(i => i.ADDRNUMBER == addressCode);
+        //    foreach (var compa in adrc)
+        //    {
+        //        SoaVM.Company.Name = compa.NAME1;
+        //        SoaVM.Company.TelNo = compa.TEL_NUMBER;
+        //        SoaVM.Company.StreetAddress = compa.STREET + " ";
+        //        SoaVM.Company.CityAddress = compa.CITY1;
+        //    }
+        //}
+
+        //private void GetCustomerDetails(string customerNumber)
+        //{
+        //    //get Customer details
+        //    var kna1 = _context.KNA1s.Where(i => i.KUNNR == customerNumber);
+
+        //    foreach (var cust in kna1)
+        //    {
+        //        SoaVM.Customer.Code = cust.KUNNR;
+        //        SoaVM.Customer.Name = cust.NAME1;
+        //        SoaVM.Customer.StreetAddress = cust.STRAS + " ";
+        //        SoaVM.Customer.CityAddress = cust.ORT01;
+        //    }
+
+        //    //Get Customer Number and Attention To
+        //    var knvk = _context.KNVKs.Where(i => i.KUNNR == customerNumber);
+
+        //    foreach (var custo in knvk)
+        //    {
+        //        SoaVM.Customer.AttentionTo = custo.NAME1;
+        //    }
+        //}
+
+        #region API Calls
+
+        private IEnumerable<BapiOpenItemDto> GetOpenItemsAsOfDate()
         {
-            var soaPrevious = _bapi.GetBapi(soaVM, date);
+            SoaParams soaParams = new SoaParams
+            {
+                Customer_Number = SoaVM.Customer_Number,
+                Company_Code = SoaVM.Company_Code,
+                Posting_Date = SoaVM.Posting_Date
+            };
+
+            return _bapi.GetResponse(soaParams, SD.ApiUriOpenItems);
+        }
+
+        private IEnumerable<BapiOpenItemDto> GetOpenItemsPreviousMonth()
+        {
+            SoaParams soaParams = new SoaParams
+            {
+                Customer_Number = SoaVM.Customer_Number,
+                Company_Code = SoaVM.Company_Code,
+                Posting_Date = SoaVM.PreviewMonthLastDay
+            };
+
+            return _bapi.GetResponse(soaParams, SD.ApiUriOpenItems);
+        }
+
+        private IEnumerable<BapiOpenItemDto> GetStatementCurrentMonth()
+        {
+            SoaParams soaParams = new SoaParams
+            {
+                Customer_Number = SoaVM.Customer_Number,
+                Company_Code = SoaVM.Company_Code,
+                Date_From = SoaVM.Date_From,
+                Date_To = SoaVM.Posting_Date
+            };
+
+            return _bapi.GetResponse(soaParams, SD.ApiUriStatement);
+        }
+
+        #endregion API Calls
+
+        #region Previews Balance
+
+        private double GetPreviousBalance()
+        {
+            var soaPrevious = SoaVM.OpenItemsPreviousMonth;
 
             double totalbalance = 0;
 
@@ -69,242 +215,244 @@ namespace SoaApp.Controllers
             return totalbalance;
         }
 
-        private void GetTotalAmountDue()
-        {
-            SD.TotalAmountDue = ((SD.UpTotalAmount + SD.WhTotalAmount) + SD.DebitCreditTotalAmount) - SD.TotalPayments;
-        }
+        #endregion Previews Balance
 
-        private void GetCurrentPreviousBill(DateTime asof)
-        {
-            var currentPrevBill = _context.BSIDNews
-                .Where(i => i.KUNNR == SoaVM.Customer.Code);
+        #region Current Billings
 
-            // Current Bills
-            foreach (var bill in currentPrevBill)
+        private double GetCurrentBillings()
+        {
+            var currentBilling = SoaVM.StatementCurrentMonth
+                                    .Where(x =>
+                                            (x.DB_CR_IND == "S") &&
+                                            !(x.SP_GL_IND == "C"));
+            double TotalCurrentBills = 0;
+
+            foreach (var item in currentBilling)
             {
-                if (bill.BUDAT >= DateMangement.GetFirstDayOfCurrentMonth(asof) && bill.BUDAT <= asof)
+                if (item.DB_CR_IND == "S")
                 {
-                    if (bill.SHKZG == "S")
-                    {
-                        SD.CurrentBillsTotal += Convert.ToDouble(bill.WRBTR);
-                    }
-                    else
-                    {
-                        SD.CurrentBillsTotal -= Convert.ToDouble(bill.WRBTR);
-                    }
-                }
-            }
-
-            foreach (var bill in currentPrevBill)
-            {
-                if (bill.BUDAT <= DateMangement.GetPreviousMonthLastDay(asof))
-                {
-                    if (bill.SHKZG == "S")
-                    {
-                        SD.PreviousBillsTotal += Convert.ToDouble(bill.WRBTR);
-                    }
-                    else
-                    {
-                        SD.PreviousBillsTotal -= Convert.ToDouble(bill.WRBTR);
-                    }
-                }
-            }
-            //SD.PreviousBillsTotal += SD.WhTotalAmount;
-            //SD.PreviousBillsTotal += SD.WhTotalAmount;
-        }
-
-        private void GetCreditDebitDetails()
-        {
-            // get all credit and debit from table
-            var bsidCmdm = _context.BSIDs.Where(i => (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                                        (i.KUNNR == SoaVM.Customer.Code) &&
-                                                        (i.BLART == "P8" ||
-                                                            i.BLART == "DG" ||
-                                                            i.BLART == "DJ" ||
-                                                            i.BLART == "DH" ||
-                                                            i.BLART == "DM"));
-            // put list of cwt items to the webpage
-            ViewBag.BSID_CMDM = bsidCmdm;
-
-            // get all credit items
-            var bsidCredit = _context.BSIDs.Where(i =>
-                                    (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                    (i.KUNNR == SoaVM.Customer.Code) &&
-                                    (i.SHKZG == "H") &&
-                                    (i.BLART == "P8" ||
-                                        i.BLART == "DG" ||
-                                        i.BLART == "DJ"));
-
-            // sum of all credit
-            foreach (var credit in bsidCredit)
-            {
-                SD.CreditTotalAmount += Convert.ToDouble(credit.DMBTR);
-            }
-
-            // get all debit items
-            var bsidDebit = _context.BSIDs.Where(i =>
-                                    (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                    (i.KUNNR == SoaVM.Customer.Code) &&
-                                    (i.SHKZG == "S") &&
-                                    (i.BLART == "DH" || i.BLART == "DM"));
-
-            // sum of all debit items
-            foreach (var debit in bsidDebit)
-            {
-                SD.DebitTotalAmount += Convert.ToDouble(debit.DMBTR);
-            }
-
-            // debit and credit total = debit amount - credit amount
-            SD.DebitCreditTotalAmount = SD.DebitTotalAmount - SD.CreditTotalAmount;
-        }
-
-        private void GetUnpaidDetails()
-        {
-            //getting Unpaid items
-            var unpaidItems = _context.BSIDs.Where(i => (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                                                        (i.KUNNR == SoaVM.Customer.Code) &&
-                                                        !(i.BLART == "P8" ||
-                                                          i.BLART == "DG" ||
-                                                          i.BLART == "DJ" ||
-                                                          i.BLART == "DH" ||
-                                                          i.BLART == "DM")).OrderByDescending(i => i.ZFBDT);
-
-            // put list of cwt items to the webpage
-            ViewBag.BSID_UNPAID = unpaidItems;
-
-            // sum of all unpaid transaction
-            foreach (var unpaid in unpaidItems)
-            {
-                if (unpaid.SHKZG == "S")
-                {
-                    SD.UpAmount += Convert.ToDouble(unpaid.DMBTR);
+                    TotalCurrentBills += item.LC_AMOUNT;
                 }
                 else
                 {
-                    SD.PAmount += Convert.ToDouble(unpaid.DMBTR);
+                    TotalCurrentBills -= item.LC_AMOUNT;
                 }
             }
 
-            SD.UpTotalAmount = SD.UpAmount - SD.PAmount;
+            return TotalCurrentBills;
         }
 
-        private void GetCwtDetails()
+        #endregion Current Billings
+
+        #region Payments
+
+        private IEnumerable<BapiOpenItemDto> GetPaymentsList()
         {
-            // get all cwt from database
-            var bsidCwt = _context.BSIDs.Where(i => (i.UMSKZ == "C") && (i.KUNNR == SoaVM.Customer.Code));
+            var openitems = SoaVM.OpenItemsAsOfDate
+                    .Where(x =>
+                        !(x.SP_GL_IND == "C") &&
+                         (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"));
 
-            // put list of cwt items to the webpage
-            ViewBag.BSID_CWT = bsidCwt;
+            var balanceditem = SoaVM.OpenItemsPreviousMonth
+                                .Where(x =>
+                                    !(x.SP_GL_IND == "C") &&
+                                     (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"));
 
-            // get the total amount of cwt
-            foreach (var cwt in bsidCwt)
+            List<BapiOpenItemDto> allPayments = new List<BapiOpenItemDto>().Distinct().ToList();
+
+            foreach (var item in openitems)
             {
-                if (cwt.SHKZG == "H")
+                allPayments.Add(item);
+            }
+
+            foreach (var item in balanceditem)
+            {
+                allPayments.Add(item);
+            }
+
+            var distPayments = allPayments.GroupBy(x => x.DOC_NO).Select(y => y.FirstOrDefault());
+
+            return distPayments;
+        }
+
+        private double GetTotalPayments()
+        {
+            var totalPaymentsList = SoaVM.PaymentsListItem;
+
+            double TotalPayments = 0;
+
+            foreach (var payment in totalPaymentsList)
+            {
+                if (payment.DB_CR_IND == "S")
                 {
-                    SD.WhPaidAmount += Convert.ToDouble(cwt.DMBTR);
+                    TotalPayments += Convert.ToDouble(payment.LC_AMOUNT);
                 }
                 else
                 {
-                    SD.WhUnpaidAmount += Convert.ToDouble(cwt.DMBTR);
+                    TotalPayments -= Convert.ToDouble(payment.LC_AMOUNT);
                 }
-                SD.WhTotalAmount = SD.WhUnpaidAmount - SD.WhPaidAmount;
             }
+
+            return TotalPayments;
         }
 
-        private void PaymentComputation()
-        {
-            var bsidBsad = _context.Payments
-                .Where(i =>
-                        (i.UMSKZ == "" || i.UMSKZ != "C") &&
-                        (i.KUNNR == SoaVM.Customer.Code) &&
-                        (
-                            i.BLART == "DX" ||
-                            i.BLART == "DY" ||
-                            i.BLART == "DZ"
-                        ));
+        #endregion Payments
 
-            foreach (var item in bsidBsad)
+        #region Unpaid Transaction
+
+        private IEnumerable<BapiOpenItemDto> GetUnpaidItems()
+        {
+            return SoaVM.OpenItemsAsOfDate
+                .Where(y =>
+                    !(y.SP_GL_IND == "C") &&
+                    !(y.DOC_TYPE == "P8" ||
+                        y.DOC_TYPE == "P9" ||
+                        y.DOC_TYPE == "DG" ||
+                        y.DOC_TYPE == "DJ" ||
+                        y.DOC_TYPE == "DM" ||
+                        y.DOC_TYPE == "DH" ||
+                        y.DOC_TYPE == "PA" ||
+                        y.DOC_TYPE == "PB"))
+                .OrderByDescending(x => x.ENTRY_DATE);
+        }
+
+        private double GetUnpaidTotal()
+        {
+            var totalunpaid = SoaVM.UnpaidListItem
+                                .OrderByDescending(x => x.ENTRY_DATE)
+                                .Where(y =>
+                                  !(y.SP_GL_IND == "C") &&
+                                  !(y.DOC_TYPE == "P8" ||
+                                        y.DOC_TYPE == "P9" ||
+                                        y.DOC_TYPE == "DG" ||
+                                        y.DOC_TYPE == "DJ" ||
+                                        y.DOC_TYPE == "DM" ||
+                                        y.DOC_TYPE == "DH" ||
+                                        y.DOC_TYPE == "PA" ||
+                                        y.DOC_TYPE == "PB"
+                                    ));
+            double unpaids = 0;
+
+            foreach (var unpaid in totalunpaid)
             {
-                if (item.SHKZG == "H")
+                if (unpaid.DB_CR_IND == "S")
                 {
-                    SD.UnpaidPayments += Convert.ToDouble(item.DMBTR);
+                    unpaids += Convert.ToDouble(unpaid.LC_AMOUNT);
                 }
                 else
                 {
-                    SD.PaidPayments += Convert.ToDouble(item.DMBTR);
+                    unpaids -= Convert.ToDouble(unpaid.LC_AMOUNT);
                 }
             }
 
-            SD.TotalPayments = SD.UnpaidPayments - SD.PaidPayments;
+            return unpaids;
         }
 
-        private static void ClearVariables()
+        #endregion Unpaid Transaction
+
+        #region Credit and Debit
+
+        private IEnumerable<BapiOpenItemDto> GetCreditAndDebitList()
         {
-            SD.WhTotalAmount = 0;
-            SD.UpAmount = 0;
-            SD.PAmount = 0;
-            SD.UpTotalAmount = 0;
-            SD.TotalAmountDue = 0;
-            SD.DebitTotalAmount = 0;
-            SD.CreditTotalAmount = 0;
-            SD.DebitCreditTotalAmount = 0;
-            SD.PaidPayments = 0;
-            SD.UnpaidPayments = 0;
-            SD.TotalPayments = 0;
-            SD.CurrentBillsTotal = 0;
-            SD.PreviousBillsTotal = 0;
-            SD.DollarTotal = 0;
-            SD.WhPaidAmount = 0;
-            SD.WhUnpaidAmount = 0;
+            SoaParams soaParams = new SoaParams
+            {
+                Customer_Number = SoaVM.Customer_Number,
+                Company_Code = SoaVM.Company_Code,
+                Date_From = SoaVM.Date_From,
+                Date_To = SoaVM.Posting_Date
+            };
+
+            return SoaVM.StatementCurrentMonth
+                .Where(x => x.DOC_TYPE == "P8" ||
+                            x.DOC_TYPE == "P9" ||
+                            x.DOC_TYPE == "DG" ||
+                            x.DOC_TYPE == "DJ" ||
+                            x.DOC_TYPE == "DM" ||
+                            x.DOC_TYPE == "DH" ||
+                            x.DOC_TYPE == "PA" ||
+                            x.DOC_TYPE == "PB");
         }
 
-        #region Final Functions
-
-        private void GetCompanyDetails(int companyCode)
+        private double GetTotalCreditAndDebit()
         {
-            //Get Address Code
-            var t001 = _context.T001s.Where(i => i.BURKS == Convert.ToString(companyCode));
+            var soaStatement = SoaVM.CreditAndDebitList
+                                .Where(x => x.DOC_TYPE == "P8" ||
+                                            x.DOC_TYPE == "P9" ||
+                                            x.DOC_TYPE == "DG" ||
+                                            x.DOC_TYPE == "DJ" ||
+                                            x.DOC_TYPE == "DM" ||
+                                            x.DOC_TYPE == "DH" ||
+                                            x.DOC_TYPE == "PA" ||
+                                            x.DOC_TYPE == "PB");
+            double totalcmdm = 0;
 
-            var addressCode = "";
-            foreach (var comp in t001)
+            foreach (var cmDm in soaStatement)
             {
-                addressCode = comp.ADRNR;
-                SoaVM.Company.TinNo = comp.STCEG;
+                if (cmDm.DB_CR_IND == "S")
+                {
+                    totalcmdm += Convert.ToDouble(cmDm.LC_AMOUNT);
+                }
+                else
+                {
+                    totalcmdm -= Convert.ToDouble(cmDm.LC_AMOUNT);
+                }
             }
 
-            //Company Details
-            var adrc = _context.ADRCs.Where(i => i.ADDRNUMBER == addressCode);
-            foreach (var compa in adrc)
-            {
-                SoaVM.Company.Name = compa.NAME1;
-                SoaVM.Company.TelNo = compa.TEL_NUMBER;
-                SoaVM.Company.StreetAddress = compa.STREET + " ";
-                SoaVM.Company.CityAddress = compa.CITY1;
-            }
+            return totalcmdm;
         }
 
-        private void GetCustomerDetails(string customerNumber)
+        #endregion Credit and Debit
+
+        #region Uncollected CWT
+
+        private IEnumerable<BapiOpenItemDto> GetUncollectedCwtList()
         {
-            //get Customer details
-            var kna1 = _context.KNA1s.Where(i => i.KUNNR == customerNumber);
+            return SoaVM.OpenItemsAsOfDate
+                .Where(x => x.SP_GL_IND == "C").OrderByDescending(e => e.ENTRY_DATE);
+        }   // Getting the list of Uncollected Cwt
 
-            foreach (var cust in kna1)
+        private double GetTotalUncollectedCwtUsd()
+        {
+            var cwtList = SoaVM.UncollectedCwtList.Where(x => (x.SP_GL_IND == "C") && (x.CURRENCY == "USD"));
+
+            double totalcwt = 0;
+
+            foreach (var cwt in cwtList)
             {
-                SoaVM.Customer.Code = cust.KUNNR;
-                SoaVM.Customer.Name = cust.NAME1;
-                SoaVM.Customer.StreetAddress = cust.STRAS + " ";
-                SoaVM.Customer.CityAddress = cust.ORT01;
+                if (cwt.DB_CR_IND == "S")
+                {
+                    totalcwt += Convert.ToDouble(cwt.LC_AMOUNT);
+                }
+                else
+                {
+                    totalcwt -= Convert.ToDouble(cwt.LC_AMOUNT);
+                }
             }
 
-            //Get Customer Number and Attention To
-            var knvk = _context.KNVKs.Where(i => i.KUNNR == customerNumber);
-
-            foreach (var custo in knvk)
-            {
-                SoaVM.Customer.AttentionTo = custo.NAME1;
-            }
+            return totalcwt;
         }
 
-        #endregion Final Functions
+        private double GetTotalUncollectedCwtPhp()
+        {
+            var cwtList = SoaVM.UncollectedCwtList.Where(x => (x.SP_GL_IND == "C") && (x.CURRENCY == "PHP"));
+
+            double totalcwt = 0;
+
+            foreach (var cwt in cwtList)
+            {
+                if (cwt.DB_CR_IND == "S")
+                {
+                    totalcwt += Convert.ToDouble(cwt.LC_AMOUNT);
+                }
+                else
+                {
+                    totalcwt -= Convert.ToDouble(cwt.LC_AMOUNT);
+                }
+            }
+
+            return totalcwt;
+        }       // Getting the total uncollected cwt
+
+        #endregion Uncollected CWT
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SoaApp.Models
 {
-    public class BAPITable
+    public class BapiOpenItem
     {
         public string COMP_CODE { get; set; }
         public string CUSTOMER { get; set; }

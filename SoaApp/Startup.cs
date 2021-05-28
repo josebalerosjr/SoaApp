@@ -41,7 +41,6 @@ namespace SoaApp
             });
             services.AddRazorPages();
 
-            services.AddDbContext<SOADbContext>(options => options.UseSqlServer(Conn_soa));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

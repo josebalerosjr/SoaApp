@@ -81,7 +81,19 @@
             <td></td>
             <td></td>
             <td></td>
-            <td style="border-right: solid;">0</td>
+            @if (Model.TotalPayments < 0)
+            {
+                var totals = Model.TotalPayments * -1;
+                <td style="border-right: solid;">
+                    (@totals.ToString("0,0.00"))
+                </td>
+            }
+            else
+            {
+                <td style="border-right: solid;">
+                    @Model.TotalPayments.ToString("0,0.00");
+                </td>
+            }
         </tr> <!-- CUSTOMER NUMBER -->
         <tr>
             <td colspan="2">Attention to: </td>
@@ -90,13 +102,21 @@
             <td></td>
             <td></td>
             <td></td>
-            @if (@SD.DebitCreditTotalAmount == 0)
+            @if (@Model.TotalCreditAndDebit == 0)
             {
                 <td style="border-right: solid">0</td>
             }
             else
             {
-                <td style="border-right: solid">@SD.DebitCreditTotalAmount.ToString("0,0.00")</td>
+                if (Model.TotalCreditAndDebit < 0)
+                {
+                    var totalcd = Model.TotalCreditAndDebit * -1;
+                    <td style="border-right: solid">(@totalcd.ToString("0,0.00"))</td>
+                }
+                else
+                {
+                    <td style="border-right: solid">@Model.TotalCreditAndDebit.ToString("0,0.00")</td>
+                }
             }
         </tr> <!-- CUSTOMER ATTENTION TO -->
         <tr>
@@ -107,13 +127,14 @@
             <td></td>
             <td></td>
             <td></td>
-            @if (@SD.CurrentBillsTotal == 0)
+            @if (Model.TotalCurrentBillings < 0)
             {
-                <td style="border-right: solid">0</td>
+                var totalcurrent = Model.TotalCurrentBillings * -1;
+                <td style="border-right: solid">(@totalcurrent.ToString("0,0.00"))</td>
             }
             else
             {
-                <td style="border-right: solid">@SD.CurrentBillsTotal.ToString("0,0.00")</td>
+                <td style="border-right: solid">@Model.TotalCurrentBillings.ToString("0,0.00")</td>
             }
         </tr> <!-- CUSTOMER ADDRESS -->
         <tr class="font-weight-bold">
@@ -169,13 +190,14 @@
                 <td></td>
                 <td></td>
             }
-            @if (Model.Customer.PreviousBalance == 0)
+            @if (Model.PreviousBalance < 0)
             {
-                <td>0</td>
+                var totalPrevious = Model.PreviousBalance * -1;
+                <td>(@totalPrevious.ToString("0,0.00"))</td>
             }
             else
             {
-                <td>@Model.Customer.PreviousBalance.ToString("0,0.00")</td>
+                <td>@Model.PreviousBalance.ToString("0,0.00")</td>
             }
         </tr> <!-- PREVIOUS BALANCE -->
         <tr>
@@ -204,18 +226,21 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- PAYMENT DETAILS HEADER -->
-        @*@foreach (var payments in ViewBag.DxDyDz)
+        @foreach (var payments in Model.PaymentsListItem.Where(x =>
+(x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ") &&
+!(x.SP_GL_IND == "C")
+).OrderByDescending(c => c.ENTRY_DATE))
         {
             <tr>
-                <td class="text-center">@payments.BLART</td>
-                <td colspan="2" class="text-center">@payments.BELNR</td>
-                <td class="text-center">@payments.BUDAT</td>
+                <td class="text-center">@payments.DOC_TYPE</td>
+                <td colspan="2" class="text-center">@payments.DOC_NO</td>
+                <td class="text-center">@payments.PSTNG_DATE.ToShortDateString()</td>
                 <td></td>
-                <td colspan="5">@payments.SGTXT</td>
+                <td colspan="5">@payments.ITEM_TEXT</td>
                 @if (SD.DollarTotal != 0)
                 {
                     <td></td>
-                    @if (payments.SHKZG == "H")
+                    @if (payments.DB_CR_IND == "H")
                     {
                         <td>(@SD.DollarTotal)</td>
                         <!--for dollar-->
@@ -232,16 +257,16 @@
                     <td></td>
                 }
                 <td></td>
-                @if (payments.SHKZG == "H")
+                @if (payments.DB_CR_IND == "H")
                 {
-                    <td>(@payments.DMBTR)</td>
+                    <td>(@payments.LC_AMOUNT.ToString("0,0.00"))</td>
                 }
                 else
                 {
-                    <td>@payments.DMBTR</td>
+                    <td>@payments.LC_AMOUNT.ToString("0,0.00")</td>
                 }
             </tr>
-        }*@  <!-- PAYMENT DETAILS ITEM LOOP -->
+        }   @*PAYMENT DETAILS ITEM LOOP*@
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Payment</b></td>
             @if (SD.DollarTotal != 0)
@@ -256,7 +281,15 @@
                 <td></td>
                 <td></td>
             }
-            <td>@SD.TotalPayments.ToString("0,0.00")</td>
+            @if (Model.TotalPayments < 0)
+            {
+                var total = Model.TotalPayments * -1;
+                <td>(@total.ToString("0,0.00"))</td>
+            }
+            else
+            {
+                <td>@Model.TotalPayments.ToString("0,0.00")</td>
+            }
         </tr> <!-- PAYMENT TOTAL -->
         <tr>
             <td colspan="14">&nbsp;</td>
@@ -283,21 +316,21 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- UNPAID TRANSACTION HEADER -->
-        @*@foreach (var unpaid in ViewBag.BSID_UNPAID)
+        @foreach (var unpaid in Model.UnpaidListItem)
         {
             <tr>
-                <td class="text-center">@unpaid.BLART</td>
-                <td colspan="2" class="text-center">@unpaid.BELNR</td>
-                <td class="text-center">@unpaid.BUDAT</td>
-                <td class="text-center">@unpaid.ZFBDT</td>
-                @if (@unpaid.SGTXT == "" || @unpaid.SGTXT == null)
-                {
-                    <td colspan="5">Fuels</td>
-                }
-                else
-                {
-                    <td colspan="5">@unpaid.SGTXT</td>
-                }
+                <td class="text-center">@unpaid.DOC_TYPE</td>
+                <td colspan="2" class="text-center">@unpaid.DOC_NO</td>
+                <td class="text-center">@unpaid.PSTNG_DATE.ToShortDateString()</td>
+                <td class="text-center">@unpaid.ENTRY_DATE.ToShortDateString()</td>
+                @*@if (@unpaid.ITEM_TEXT == "" || @unpaid.ITEM_TEXT == null)
+                    {
+                        <td colspan="5">Fuels</td>
+                    }
+                    else
+                    {*@
+                <td colspan="5">@unpaid.ITEM_TEXT</td>
+                @*}*@
                 @if (SD.DollarTotal != 0)
                 {
                     <td></td>
@@ -309,16 +342,16 @@
                     <td></td>
                 }
                 <td></td>
-                @if (unpaid.BLART == "DJ" || unpaid.SHKZG == "H")
+                @if (unpaid.DB_CR_IND == "H")
                 {
-                    <td>(@unpaid.DMBTR)</td>
+                    <td>(@unpaid.LC_AMOUNT.ToString("0,0.00"))</td>
                 }
                 else
                 {
-                    <td>@unpaid.DMBTR</td>
+                    <td>@unpaid.LC_AMOUNT.ToString("0,0.00")</td>
                 }
             </tr>
-        } *@<!-- UNPAID TRANSACTION ITEM LOOP-->
+        }  @*UNPAID TRANSACTION ITEM LOOP*@
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Unpaid Transactions</b></td>
             @if (SD.DollarTotal != 0)
@@ -333,7 +366,7 @@
                 <td></td>
                 <td></td>
             }
-            <td>@SD.UpTotalAmount.ToString("0,0.00")</td>
+            <td>@Model.TotalUnpaid.ToString("0,0.00")</td>
         </tr> <!-- UNPAID TRANSACTION TOTAL-->
         <tr>
             <td colspan="14">&nbsp;</td>
@@ -360,14 +393,14 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- CREDIT AND DEBIT MEMO HEADER -->
-        @*@foreach (var cmDm in ViewBag.BSID_CMDM)
+        @foreach (var cmDm in Model.CreditAndDebitList)
         {
             <tr>
-                <td class="text-center">@cmDm.BLART</td>
-                <td colspan="2" class="text-center">@cmDm.BELNR</td>
-                <td class="text-center">@cmDm.BUDAT</td>
+                <td class="text-center">@cmDm.DOC_TYPE</td>
+                <td colspan="2" class="text-center">@cmDm.DOC_NO</td>
+                <td class="text-center">@cmDm.PSTNG_DATE.ToShortDateString()</td>
                 <td></td>
-                <td colspan="5">@cmDm.SGTXT</td>
+                <td colspan="5">@cmDm.ITEM_TEXT</td>
                 @if (SD.DollarTotal != 0)
                 {
                     <td></td>
@@ -379,16 +412,21 @@
                     <td></td>
                 }
                 <td></td>
-                @if ((cmDm.BLART == "P8" || cmDm.BLART == "DJ" || cmDm.BLART == "DG") && cmDm.SHKZG == "H")
+                @if ((cmDm.DOC_TYPE == "P8" ||
+                   cmDm.DOC_TYPE == "DG" ||
+                   cmDm.DOC_TYPE == "DJ" ||
+                   cmDm.DOC_TYPE == "DH" ||
+                   cmDm.DOC_TYPE == "DM") &&
+                   cmDm.DB_CR_IND == "H")
                 {
-                    <td>(@cmDm.DMBTR)</td>
+                    <td>(@cmDm.LC_AMOUNT.ToString("0,0.00"))</td>
                 }
                 else
                 {
-                    <td>@cmDm.DMBTR</td>
+                    <td>@cmDm.LC_AMOUNT.ToString("0,0.00")</td>
                 }
             </tr>
-        } *@<!-- CREDIT AND DEBIT MEMO ITEM LOOP -->
+        }  <!--CREDIT AND DEBIT MEMO ITEM LOOP-->
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Credit and Debit Memo</b></td>
             @if (SD.DollarTotal != 0)
@@ -403,7 +441,15 @@
                 <td></td>
                 <td></td>
             }
-            <td>@SD.DebitCreditTotalAmount.ToString("0,0.00")</td>
+            @if (Model.TotalCreditAndDebit < 0)
+            {
+                var totalcd = Model.TotalCreditAndDebit * -1;
+                <td>(@totalcd.ToString("0,0.00"))</td>
+            }
+            else
+            {
+                <td>@Model.TotalCreditAndDebit.ToString("0,0.00")</td>
+            }
         </tr> <!-- CREDIT AND DEBIT MEMO TOTAL -->
         <tr>
             <td colspan="14">&nbsp;</td>
@@ -430,19 +476,25 @@
             <td></td>
             <td>Amount(PHP)</td>
         </tr> <!-- WITHHOLDING TAX HEADER -->
-        @*@foreach (var cwt in ViewBag.BSID_CWT)
+        @foreach (var cwt in Model.UncollectedCwtList)
         {
             <tr>
-                <td class="text-center">@cwt.BLART</td>
-                <td colspan="2" class="text-center">@cwt.BELNR</td>
-                <td class="text-center">@cwt.BUDAT</td>
-                <td class="text-center">@cwt.ZFBDT</td>
-                <td colspan="5">@cwt.SGTXT</td>
-                @if (SD.DollarTotal != 0)
+                <td class="text-center">@cwt.DOC_TYPE</td>
+                <td colspan="2" class="text-center">@cwt.DOC_NO</td>
+                <td class="text-center">@cwt.PSTNG_DATE.ToShortDateString()</td>
+                <td class="text-center">@cwt.ENTRY_DATE.ToShortDateString()</td>
+                <td colspan="5">@cwt.ITEM_TEXT</td>
+                @if (Model.TotalUncollectedCwtUsd != 0)
                 {
                     <td></td>
-                    <td>0</td>
-
+                    @if (cwt.DB_CR_IND == "H")
+                    {
+                        <td>(@cwt.LC_AMOUNT.ToString("0,0.00"))</td>
+                    }
+                    else
+                    {
+                        <td>@cwt.LC_AMOUNT.ToString("0,0.00")</td>
+                    }
                 }
                 else
                 {
@@ -450,22 +502,27 @@
                     <td></td>
                 }
                 <td></td>
-                @if (cwt.SHKZG == "H")
+                @if (cwt.DB_CR_IND == "H")
                 {
-                    <td>(@cwt.DMBTR)</td>
+                    <td>(@cwt.LC_AMOUNT.ToString("0,0.00"))</td>
                 }
                 else
                 {
-                    <td>@cwt.DMBTR</td>
+                    <td>@cwt.LC_AMOUNT.ToString("0,0.00")</td>
                 }
             </tr>
-        } *@<!-- WITHHOLDING TAX ITEM LOOP -->
+        } <!-- WITHHOLDING TAX ITEM LOOP -->
         <tr style="border-top: 1px solid;">
             <td colspan="10"><b>Total Withholding Tax</b></td>
-            @if (SD.DollarTotal != 0)
+            @if (Model.TotalUncollectedCwtUsd != 0)
             {
                 <td>USD</td>
                 <td>0</td>
+                @if (Model.TotalUncollectedCwtUsd < 0)
+                {
+                    var cwttotalUsd = Model.TotalUncollectedCwtUsd * -1;
+                    <td>(@cwttotalUsd.ToString("0,0.00"))</td>
+                }
                 <td>PHP</td>
             }
             else
@@ -474,7 +531,15 @@
                 <td></td>
                 <td></td>
             }
-            <td>@SD.WhTotalAmount.ToString("0,0.00")</td>
+            @if (Model.TotalUncollectedCwtPhp < 0)
+            {
+                var cwttotalPhp = Model.TotalUncollectedCwtPhp * -1;
+                <td>(@cwttotalPhp.ToString("0,0.00"))</td>
+            }
+            else
+            {
+                <td>@Model.TotalUncollectedCwtPhp.ToString("0,0.00")</td>
+            }
         </tr> <!-- WITHHOLDING TAX TOTAL -->
         <tr>
             <td colspan="14">&nbsp;</td>
