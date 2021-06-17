@@ -28,8 +28,8 @@ namespace SoaApp.Models
         public string DB_CR_IND { get; set; }
         public string BUS_AREA { get; set; }
         public string TAX_CODE { get; set; }
-        public double LC_AMOUNT { get; set; }
-        public double AMT_DOCCUR { get; set; }
+        public decimal LC_AMOUNT { get; set; }
+        public decimal AMT_DOCCUR { get; set; }
         public string LC_TAX { get; set; }
         public string TX_DOC_CUR { get; set; }
         public string ITEM_TEXT { get; set; }
@@ -63,7 +63,7 @@ namespace SoaApp.Models
         public string REF_KEY_1 { get; set; }
         public string REF_KEY_2 { get; set; }
         public string T_CURRENCY { get; set; }
-        public string AMOUNT { get; set; }
+        public decimal AMOUNT { get; set; }
         public string NET_AMOUNT { get; set; }
         public string NAME { get; set; }
         public string NAME_2 { get; set; }

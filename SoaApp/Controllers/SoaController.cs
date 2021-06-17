@@ -63,35 +63,39 @@ namespace SoaApp.Controllers
 
             #region Previous Balance
 
-            SoaVM.PreviousBalance = GetPreviousBalance();  // Get Previous Balance
+            SoaVM.PreviousBalancePhp = GetPreviousBalancePhp();  // Get Previous Balance PHP
+            SoaVM.PreviousBalanceUsd = GetPreviousBalanceUsd();  // Get Previous Balance USD
 
             #endregion Previous Balance
 
             #region Current Billings
 
-            SoaVM.TotalCurrentBillings = GetCurrentBillings();
+            SoaVM.TotalCurrentBillingsUsd = GetCurrentBillingsUsd();
+            SoaVM.TotalCurrentBillingsPhp = GetCurrentBillingsPhp();
 
             #endregion Current Billings
 
             #region Payments
 
             SoaVM.PaymentsListItem = GetPaymentsList();     // setting Payment Lists
-            SoaVM.TotalPayments = GetTotalPayments();       // setting  total payments
+            SoaVM.TotalPaymentsPhp = GetTotalPaymentsPhp();       // setting  total payments
+            SoaVM.TotalPaymentsUsd = GetTotalPaymentsUsd();       // setting  total payments
 
             #endregion Payments
 
             #region Unpaid
 
             SoaVM.UnpaidListItem = GetUnpaidItems();
-            SoaVM.TotalUnpaid = GetUnpaidTotal();
+            SoaVM.TotalUnpaidUsd = GetUnpaidTotalUsd();
+            SoaVM.TotalUnpaidPhp = GetUnpaidTotalPhp();
 
             #endregion Unpaid
 
             #region Credit And Debit
 
             SoaVM.CreditAndDebitList = GetCreditAndDebitList();
-
-            SoaVM.TotalCreditAndDebit = GetTotalCreditAndDebit();
+            SoaVM.TotalCreditAndDebitUsd = GetTotalCreditAndDebitUsd();
+            SoaVM.TotalCreditAndDebitPhp = GetTotalCreditAndDebitPhp();
 
             #endregion Credit And Debit
 
@@ -102,6 +106,13 @@ namespace SoaApp.Controllers
             SoaVM.TotalUncollectedCwtUsd = GetTotalUncollectedCwtUsd();   // setting total uncollected CWT
 
             #endregion CWT
+
+            #region TotalSOA
+
+            SoaVM.TotalSOAUsd = (SoaVM.TotalUncollectedCwtUsd) + (SoaVM.TotalCreditAndDebitUsd) + (SoaVM.TotalUnpaidUsd);
+            SoaVM.TotalSOAPhp = (SoaVM.TotalUncollectedCwtPhp) + (SoaVM.TotalCreditAndDebitPhp) + (SoaVM.TotalUnpaidPhp); 
+
+            #endregion
 
             return View(SoaVM);
         }
@@ -162,7 +173,7 @@ namespace SoaApp.Controllers
                 Posting_Date = SoaVM.Posting_Date
             };
 
-            return _bapi.GetResponse(soaParams, SD.ApiUriOpenItems);
+            return _bapi.GetResponse(soaParams, SD.BAPI_AR_ACC_GETOPENITEMS);
         }
 
         private IEnumerable<BapiOpenItemDto> GetOpenItemsPreviousMonth()
@@ -174,7 +185,7 @@ namespace SoaApp.Controllers
                 Posting_Date = SoaVM.PreviewMonthLastDay
             };
 
-            return _bapi.GetResponse(soaParams, SD.ApiUriOpenItems);
+            return _bapi.GetResponse(soaParams, SD.BAPI_AR_ACC_GETOPENITEMS);
         }
 
         private IEnumerable<BapiOpenItemDto> GetStatementCurrentMonth()
@@ -187,28 +198,51 @@ namespace SoaApp.Controllers
                 Date_To = SoaVM.Posting_Date
             };
 
-            return _bapi.GetResponse(soaParams, SD.ApiUriStatement);
+            return _bapi.GetResponse(soaParams, SD.BAPI_AR_ACC_GETSTATEMENT);
         }
 
         #endregion API Calls
 
         #region Previews Balance
 
-        private double GetPreviousBalance()
+        private decimal GetPreviousBalancePhp()
         {
-            var soaPrevious = SoaVM.OpenItemsPreviousMonth;
+            var soaPrevious = SoaVM.OpenItemsPreviousMonth
+                                .Where(x => x.CURRENCY == "PHP");
 
-            double totalbalance = 0;
+            decimal totalbalance = 0;
 
             foreach (var item in soaPrevious)
             {
                 if (item.DB_CR_IND == "S")
                 {
-                    totalbalance += Convert.ToDouble(item.LC_AMOUNT);
+                    totalbalance += item.AMOUNT;
                 }
                 else
                 {
-                    totalbalance -= Convert.ToDouble(item.LC_AMOUNT);
+                    totalbalance -= item.AMOUNT;
+                }
+            }
+
+            return totalbalance;
+        }
+
+        private decimal GetPreviousBalanceUsd()
+        {
+            var soaPrevious = SoaVM.OpenItemsPreviousMonth
+                                .Where(x => x.CURRENCY == "USD");
+
+            decimal totalbalance = 0;
+
+            foreach (var item in soaPrevious)
+            {
+                if (item.DB_CR_IND == "S")
+                {
+                    totalbalance += item.AMOUNT;
+                }
+                else
+                {
+                    totalbalance -= item.AMOUNT;
                 }
             }
 
@@ -219,23 +253,50 @@ namespace SoaApp.Controllers
 
         #region Current Billings
 
-        private double GetCurrentBillings()
+        private decimal GetCurrentBillingsUsd()
         {
             var currentBilling = SoaVM.StatementCurrentMonth
                                     .Where(x =>
                                             (x.DB_CR_IND == "S") &&
-                                            !(x.SP_GL_IND == "C"));
-            double TotalCurrentBills = 0;
+                                            !(x.SP_GL_IND == "C") && 
+                                            !(x.DOC_TYPE == "DZ" || x.DOC_TYPE == "DX"|| x.DOC_TYPE == "DY") &&
+                                             (x.CURRENCY == "USD"));
+            decimal TotalCurrentBills = 0;
 
             foreach (var item in currentBilling)
             {
                 if (item.DB_CR_IND == "S")
                 {
-                    TotalCurrentBills += item.LC_AMOUNT;
+                    TotalCurrentBills += item.AMOUNT;
                 }
                 else
                 {
-                    TotalCurrentBills -= item.LC_AMOUNT;
+                    TotalCurrentBills -= item.AMOUNT;
+                }
+            }
+
+            return TotalCurrentBills;
+        }
+
+        private decimal GetCurrentBillingsPhp()
+        {
+            var currentBilling = SoaVM.StatementCurrentMonth
+                                    .Where(x =>
+                                            (x.DB_CR_IND == "S") &&
+                                            !(x.SP_GL_IND == "C") &&
+                                            !(x.DOC_TYPE == "DZ" || x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY") &&
+                                             (x.CURRENCY == "PHP"));
+            decimal TotalCurrentBills = 0;
+
+            foreach (var item in currentBilling)
+            {
+                if (item.DB_CR_IND == "S")
+                {
+                    TotalCurrentBills += item.AMOUNT;
+                }
+                else
+                {
+                    TotalCurrentBills -= item.AMOUNT;
                 }
             }
 
@@ -246,7 +307,7 @@ namespace SoaApp.Controllers
 
         #region Payments
 
-        private IEnumerable<BapiOpenItemDto> GetPaymentsList()
+        private IEnumerable<BapiOpenItemDto> GetPaymentsList2()
         {
             var openitems = SoaVM.OpenItemsAsOfDate
                     .Where(x =>
@@ -272,24 +333,56 @@ namespace SoaApp.Controllers
 
             var distPayments = allPayments.GroupBy(x => x.DOC_NO).Select(y => y.FirstOrDefault());
 
-            return distPayments;
+
+
+            return distPayments.OrderByDescending(x => x.ENTRY_DATE);
         }
 
-        private double GetTotalPayments()
+        private IEnumerable<BapiOpenItemDto> GetPaymentsList()
         {
-            var totalPaymentsList = SoaVM.PaymentsListItem;
+            var payments = SoaVM.StatementCurrentMonth
+                    .Where(x =>
+                        !(x.SP_GL_IND == "C") &&
+                         (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"));
+            return payments.OrderByDescending(x => x.ENTRY_DATE);
+        }
 
-            double TotalPayments = 0;
+        private decimal GetTotalPaymentsPhp()
+        {
+            var totalPaymentsList = SoaVM.PaymentsListItem.Where(x => x.CURRENCY == "PHP");
+
+            decimal TotalPayments = 0;
 
             foreach (var payment in totalPaymentsList)
             {
                 if (payment.DB_CR_IND == "S")
                 {
-                    TotalPayments += Convert.ToDouble(payment.LC_AMOUNT);
+                    TotalPayments += payment.AMOUNT;
                 }
                 else
                 {
-                    TotalPayments -= Convert.ToDouble(payment.LC_AMOUNT);
+                    TotalPayments -= payment.AMOUNT;
+                }
+            }
+
+            return TotalPayments;
+        }
+
+        private decimal GetTotalPaymentsUsd()
+        {
+            var totalPaymentsList = SoaVM.PaymentsListItem.Where(x => x.CURRENCY == "USD");
+
+            decimal TotalPayments = 0;
+
+            foreach (var payment in totalPaymentsList)
+            {
+                if (payment.DB_CR_IND == "S")
+                {
+                    TotalPayments += payment.AMOUNT;
+                }
+                else
+                {
+                    TotalPayments -= payment.AMOUNT;
                 }
             }
 
@@ -316,36 +409,68 @@ namespace SoaApp.Controllers
                 .OrderByDescending(x => x.ENTRY_DATE);
         }
 
-        private double GetUnpaidTotal()
+        private decimal GetUnpaidTotalPhp()
         {
             var totalunpaid = SoaVM.UnpaidListItem
                                 .OrderByDescending(x => x.ENTRY_DATE)
                                 .Where(y =>
                                   !(y.SP_GL_IND == "C") &&
                                   !(y.DOC_TYPE == "P8" ||
-                                        y.DOC_TYPE == "P9" ||
-                                        y.DOC_TYPE == "DG" ||
-                                        y.DOC_TYPE == "DJ" ||
-                                        y.DOC_TYPE == "DM" ||
-                                        y.DOC_TYPE == "DH" ||
-                                        y.DOC_TYPE == "PA" ||
-                                        y.DOC_TYPE == "PB"
-                                    ));
-            double unpaids = 0;
+                                    y.DOC_TYPE == "P9" ||
+                                    y.DOC_TYPE == "DG" ||
+                                    y.DOC_TYPE == "DJ" ||
+                                    y.DOC_TYPE == "DM" ||
+                                    y.DOC_TYPE == "DH" ||
+                                    y.DOC_TYPE == "PA" ||
+                                    y.DOC_TYPE == "PB") && 
+                                    (y.CURRENCY == "PHP"));
+            decimal unpaidsPhp = 0;
 
             foreach (var unpaid in totalunpaid)
             {
                 if (unpaid.DB_CR_IND == "S")
                 {
-                    unpaids += Convert.ToDouble(unpaid.LC_AMOUNT);
+                    unpaidsPhp += unpaid.AMOUNT;
                 }
                 else
                 {
-                    unpaids -= Convert.ToDouble(unpaid.LC_AMOUNT);
+                    unpaidsPhp -= unpaid.AMOUNT;
                 }
             }
 
-            return unpaids;
+            return unpaidsPhp;
+        }
+
+        private decimal GetUnpaidTotalUsd()
+        {
+            var totalunpaid = SoaVM.UnpaidListItem
+                                .OrderByDescending(x => x.ENTRY_DATE)
+                                .Where(y =>
+                                  !(y.SP_GL_IND == "C") &&
+                                  !(y.DOC_TYPE == "P8" ||
+                                    y.DOC_TYPE == "P9" ||
+                                    y.DOC_TYPE == "DG" ||
+                                    y.DOC_TYPE == "DJ" ||
+                                    y.DOC_TYPE == "DM" ||
+                                    y.DOC_TYPE == "DH" ||
+                                    y.DOC_TYPE == "PA" ||
+                                    y.DOC_TYPE == "PB") && 
+                                    (y.CURRENCY == "USD"));
+            decimal unpaidsUsd = 0;
+
+            foreach (var unpaid in totalunpaid)
+            {
+                if (unpaid.DB_CR_IND == "S")
+                {
+                    unpaidsUsd += unpaid.AMOUNT;
+                }
+                else
+                {
+                    unpaidsUsd -= unpaid.AMOUNT;
+                }
+            }
+
+            return unpaidsUsd;
         }
 
         #endregion Unpaid Transaction
@@ -362,7 +487,8 @@ namespace SoaApp.Controllers
                 Date_To = SoaVM.Posting_Date
             };
 
-            return SoaVM.StatementCurrentMonth
+            //return SoaVM.StatementCurrentMonth
+            return SoaVM.OpenItemsAsOfDate
                 .Where(x => x.DOC_TYPE == "P8" ||
                             x.DOC_TYPE == "P9" ||
                             x.DOC_TYPE == "DG" ||
@@ -373,32 +499,48 @@ namespace SoaApp.Controllers
                             x.DOC_TYPE == "PB");
         }
 
-        private double GetTotalCreditAndDebit()
+        private decimal GetTotalCreditAndDebitUsd()
         {
-            var soaStatement = SoaVM.CreditAndDebitList
-                                .Where(x => x.DOC_TYPE == "P8" ||
-                                            x.DOC_TYPE == "P9" ||
-                                            x.DOC_TYPE == "DG" ||
-                                            x.DOC_TYPE == "DJ" ||
-                                            x.DOC_TYPE == "DM" ||
-                                            x.DOC_TYPE == "DH" ||
-                                            x.DOC_TYPE == "PA" ||
-                                            x.DOC_TYPE == "PB");
-            double totalcmdm = 0;
+            var soaStatement = GetCreditAndDebitList().Where(x => x.CURRENCY == "USD");
 
-            foreach (var cmDm in soaStatement)
+            decimal totalcmdmusd = 0;
+            if (soaStatement.Count() != 0)
             {
-                if (cmDm.DB_CR_IND == "S")
+                foreach (var cmDm in soaStatement)
                 {
-                    totalcmdm += Convert.ToDouble(cmDm.LC_AMOUNT);
-                }
-                else
-                {
-                    totalcmdm -= Convert.ToDouble(cmDm.LC_AMOUNT);
+                    if (cmDm.DB_CR_IND == "S")
+                    {
+                        totalcmdmusd += cmDm.AMOUNT;
+                    }
+                    else
+                    {
+                        totalcmdmusd -= cmDm.AMOUNT;
+                    }
                 }
             }
+            return totalcmdmusd;
+        }
 
-            return totalcmdm;
+        private decimal GetTotalCreditAndDebitPhp()
+        {
+            var soaStatement = GetCreditAndDebitList().Where(x => x.CURRENCY == "PHP");
+
+            decimal totalcmdmphp = 0;
+            if (soaStatement.Count() != 0)
+            {
+                foreach (var cmDm in soaStatement)
+                {
+                    if (cmDm.DB_CR_IND == "S")
+                    {
+                        totalcmdmphp += cmDm.AMOUNT;
+                    }
+                    else
+                    {
+                        totalcmdmphp -= cmDm.AMOUNT;
+                    }
+                }
+            }
+            return totalcmdmphp;
         }
 
         #endregion Credit and Debit
@@ -411,46 +553,50 @@ namespace SoaApp.Controllers
                 .Where(x => x.SP_GL_IND == "C").OrderByDescending(e => e.ENTRY_DATE);
         }   // Getting the list of Uncollected Cwt
 
-        private double GetTotalUncollectedCwtUsd()
+        private decimal GetTotalUncollectedCwtUsd()
         {
-            var cwtList = SoaVM.UncollectedCwtList.Where(x => (x.SP_GL_IND == "C") && (x.CURRENCY == "USD"));
+            //var cwtList = SoaVM.UncollectedCwtList.Where(x => (x.SP_GL_IND == "C") && (x.CURRENCY == "USD"));
+            var cwtList = GetUncollectedCwtList().Where(x => x.CURRENCY == "USD");
 
-            double totalcwt = 0;
-
-            foreach (var cwt in cwtList)
+            decimal totalcwtusd = 0;
+            if (cwtList.Count() != 0)
             {
-                if (cwt.DB_CR_IND == "S")
+                foreach (var cwt in cwtList)
                 {
-                    totalcwt += Convert.ToDouble(cwt.LC_AMOUNT);
-                }
-                else
-                {
-                    totalcwt -= Convert.ToDouble(cwt.LC_AMOUNT);
+                    if (cwt.DB_CR_IND == "S")
+                    {
+                        totalcwtusd += cwt.AMOUNT;
+                    }
+                    else
+                    {
+                        totalcwtusd -= cwt.AMOUNT;
+                    }
                 }
             }
-
-            return totalcwt;
+            return totalcwtusd;
         }
 
-        private double GetTotalUncollectedCwtPhp()
+        private decimal GetTotalUncollectedCwtPhp()
         {
-            var cwtList = SoaVM.UncollectedCwtList.Where(x => (x.SP_GL_IND == "C") && (x.CURRENCY == "PHP"));
+            //var cwtList = SoaVM.UncollectedCwtList.Where(x => (x.SP_GL_IND == "C") && (x.CURRENCY == "PHP"));
+            var cwtList = GetUncollectedCwtList().Where(x => x.CURRENCY == "PHP");
 
-            double totalcwt = 0;
-
-            foreach (var cwt in cwtList)
+            decimal totalcwtphp = 0;
+            if (cwtList.Count() != 0)
             {
-                if (cwt.DB_CR_IND == "S")
+                foreach (var cwt in cwtList)
                 {
-                    totalcwt += Convert.ToDouble(cwt.LC_AMOUNT);
-                }
-                else
-                {
-                    totalcwt -= Convert.ToDouble(cwt.LC_AMOUNT);
+                    if (cwt.DB_CR_IND == "S")
+                    {
+                        totalcwtphp += cwt.AMOUNT;
+                    }
+                    else
+                    {
+                        totalcwtphp -= cwt.AMOUNT;
+                    }
                 }
             }
-
-            return totalcwt;
+            return totalcwtphp;
         }       // Getting the total uncollected cwt
 
         #endregion Uncollected CWT
