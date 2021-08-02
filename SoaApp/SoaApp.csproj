@@ -8,19 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20210416034704_AddNewTables.cs" />
-    <Compile Remove="Migrations\20210416034704_AddNewTables.Designer.cs" />
-    <Compile Remove="Migrations\20210419091245_UpdatePaymentToDb.cs" />
-    <Compile Remove="Migrations\20210419091245_UpdatePaymentToDb.Designer.cs" />
-    <Compile Remove="Migrations\20210419091408_UpdatePaymentToDbcls.cs" />
-    <Compile Remove="Migrations\20210419091408_UpdatePaymentToDbcls.Designer.cs" />
-    <Compile Remove="Migrations\20210419091601_AddPaymentToDb.cs" />
-    <Compile Remove="Migrations\20210419091601_AddPaymentToDb.Designer.cs" />
-    <Compile Remove="Migrations\20210419091823_AddPaymentToDbV2.cs" />
-    <Compile Remove="Migrations\20210419091823_AddPaymentToDbV2.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 

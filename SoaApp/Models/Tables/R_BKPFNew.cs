@@ -7,6 +7,7 @@ namespace SoaApp.Models
     {
         [Key]
         public int Id { get; set; }
+
         public int BUKRS { get; set; }
         public int BELNR { get; set; }
         public int GJAHR { get; set; }

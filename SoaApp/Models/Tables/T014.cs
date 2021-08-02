@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SoaApp.Models
 {
@@ -10,6 +6,7 @@ namespace SoaApp.Models
     {
         [Key]
         public int Id { get; set; }
+
         public string KKBER { get; set; }
         public string WAERS { get; set; }
         public string STAFO { get; set; }
@@ -19,6 +16,5 @@ namespace SoaApp.Models
         public string SBGRP { get; set; }
         public string ALLCC { get; set; }
         public string KKBTX { get; set; }
-
     }
 }

@@ -1,5 +1,3 @@
-using System;
-
 namespace SoaApp.Models
 {
     public class ErrorViewModel

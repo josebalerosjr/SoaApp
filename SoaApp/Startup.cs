@@ -1,11 +1,9 @@
-using Intranet.DataAccess.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,6 +27,8 @@ namespace SoaApp
             var Conn_soa = Configuration.GetConnectionString("DevConnection");
 
             services.AddScoped<IBapiRepository, BapiRepository>();
+            services.AddScoped<ICurrencyChecker, CurrencyChecker>();
+            services.AddScoped<ISoaDetailsRepository, SoaDetailsRepository>();
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
 
@@ -40,7 +40,6 @@ namespace SoaApp
                 options.Filters.Add(new AuthorizeFilter(policy));
             });
             services.AddRazorPages();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

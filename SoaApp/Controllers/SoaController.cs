@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
+using SoaApp.Dtos;
 using SoaApp.Models;
 using SoaApp.Models.ViewModels;
 using SoaApp.Repository.IRepository;
@@ -13,13 +14,17 @@ namespace SoaApp.Controllers
     public class SoaController : Controller
     {
         private readonly IBapiRepository _bapi;
+        private readonly ISoaDetailsRepository _soaDetails;
+        private readonly ICurrencyChecker _checker;
 
         [BindProperty]
         public SoaVM SoaVM { get; set; }
 
-        public SoaController(IBapiRepository bapi)
+        public SoaController(IBapiRepository bapi, ISoaDetailsRepository soaDetails, ICurrencyChecker checker)
         {
             _bapi = bapi;
+            _soaDetails = soaDetails;
+            _checker = checker;
         }
 
         public IActionResult Index()
@@ -58,8 +63,22 @@ namespace SoaApp.Controllers
             SoaVM.OpenItemsAsOfDate = GetOpenItemsAsOfDate();
             SoaVM.OpenItemsPreviousMonth = GetOpenItemsPreviousMonth();
             SoaVM.StatementCurrentMonth = GetStatementCurrentMonth();
+            SoaVM.SoaDetails = GetCompanyCustomerDetails();
 
             #endregion API Calls
+
+            #region Company and Customer Details
+
+            GetCompanyCustomerDetailsToVM();
+
+            #endregion Company and Customer Details
+
+            #region Currency Checker
+
+            SoaVM.UsdChecker = _checker.UsdChecker(SoaVM.OpenItemsAsOfDate);
+            SoaVM.PhpChecker = _checker.PhpChecker(SoaVM.OpenItemsAsOfDate);
+
+            #endregion Currency Checker
 
             #region Previous Balance
 
@@ -110,57 +129,94 @@ namespace SoaApp.Controllers
             #region TotalSOA
 
             SoaVM.TotalSOAUsd = (SoaVM.TotalUncollectedCwtUsd) + (SoaVM.TotalCreditAndDebitUsd) + (SoaVM.TotalUnpaidUsd);
-            SoaVM.TotalSOAPhp = (SoaVM.TotalUncollectedCwtPhp) + (SoaVM.TotalCreditAndDebitPhp) + (SoaVM.TotalUnpaidPhp); 
+            SoaVM.TotalSOAPhp = (SoaVM.TotalUncollectedCwtPhp) + (SoaVM.TotalCreditAndDebitPhp) + (SoaVM.TotalUnpaidPhp);
 
-            #endregion
+            #endregion TotalSOA
 
             return View(SoaVM);
         }
 
-        //private void GetCompanyDetails(int companyCode)
-        //{
-        //    //Get Address Code
-        //    var t001 = _context.T001s.Where(i => i.BURKS == Convert.ToString(companyCode));
+        #region Testing
 
-        //    var addressCode = "";
-        //    foreach (var comp in t001)
-        //    {
-        //        addressCode = comp.ADRNR;
-        //        SoaVM.Company.TinNo = comp.STCEG;
-        //    }
+        private IEnumerable<SoaDetailsDto> GetPaymentDetails()
+        {
+            return SoaVM.SoaDetails;
+        }
 
-        //    //Company Details
-        //    var adrc = _context.ADRCs.Where(i => i.ADDRNUMBER == addressCode);
-        //    foreach (var compa in adrc)
-        //    {
-        //        SoaVM.Company.Name = compa.NAME1;
-        //        SoaVM.Company.TelNo = compa.TEL_NUMBER;
-        //        SoaVM.Company.StreetAddress = compa.STREET + " ";
-        //        SoaVM.Company.CityAddress = compa.CITY1;
-        //    }
-        //}
+        private IEnumerable<BapiOpenItemDto> GetPaymentClean()
+        {
+            // list of unique rows
+            var data = SoaVM.StatementCurrentMonth
+                .Where(x =>
+                        !(x.SP_GL_IND == "C") &&
+                         (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"))
+                .Distinct().ToList();
 
-        //private void GetCustomerDetails(string customerNumber)
-        //{
-        //    //get Customer details
-        //    var kna1 = _context.KNA1s.Where(i => i.KUNNR == customerNumber);
+            // list of items with duplicates
+            var dupe = from list in data
+                       group list by list.DOC_NO into grouped
+                       where grouped.Count() > 1
+                       select grouped.ToList();
 
-        //    foreach (var cust in kna1)
-        //    {
-        //        SoaVM.Customer.Code = cust.KUNNR;
-        //        SoaVM.Customer.Name = cust.NAME1;
-        //        SoaVM.Customer.StreetAddress = cust.STRAS + " ";
-        //        SoaVM.Customer.CityAddress = cust.ORT01;
-        //    }
+            List<BapiOpenItemDto> noDuplicates = new List<BapiOpenItemDto>(data).Distinct().ToList();
 
-        //    //Get Customer Number and Attention To
-        //    var knvk = _context.KNVKs.Where(i => i.KUNNR == customerNumber);
+            List<BapiOpenItemDto> duplicateItems = new List<BapiOpenItemDto>().Distinct().ToList();
 
-        //    foreach (var custo in knvk)
-        //    {
-        //        SoaVM.Customer.AttentionTo = custo.NAME1;
-        //    }
-        //}
+            foreach (var item in dupe)
+            {
+                foreach (var additem in item)
+                {
+                    duplicateItems.Add(additem);
+                }
+            }
+
+            foreach (var item in duplicateItems)
+            {
+                noDuplicates.Remove(item);
+            }
+
+            var splitted = duplicateItems.GroupBy(x => x.DOC_NO.ToList()).ToList();
+
+            ////  initialize payment
+            //List<BapiOpenItemDto> payments = new List<BapiOpenItemDto>();
+
+            //// initialized distinct items
+            //List<BapiOpenItemDto> nodupeitems = new List<BapiOpenItemDto>().Distinct().ToList();
+
+            //// foreach loop on the data and add to nodupeitems list all distinctitems
+            //foreach (var item in data)
+            //{
+            //    nodupeitems.Add(item);
+
+            //}
+
+            //// foreach dupeitems and get the dupe ones
+            //foreach (var list in nodupeitems)
+            //{
+            //    // compare
+            //    foreach (var list2 in data)
+            //    {
+            //        if ((list.DOC_NO == list2.DOC_NO) && !(list.DB_CR_IND == list2.DB_CR_IND))
+            //        {
+            //            payments.Add(list2);
+            //            itemstodelete = list2.DOC_NO;
+            //        }
+            //    }
+            //}
+
+            //// deleting items with duplicate from list
+            //foreach (var todeletefromlist in nodupeitems.ToList())
+            //{
+            //    if (todeletefromlist.DOC_NO == itemstodelete)
+            //    {
+            //        nodupeitems.Remove(todeletefromlist);
+            //    }
+            //}
+
+            return noDuplicates;
+        }
+
+        #endregion Testing
 
         #region API Calls
 
@@ -201,7 +257,40 @@ namespace SoaApp.Controllers
             return _bapi.GetResponse(soaParams, SD.BAPI_AR_ACC_GETSTATEMENT);
         }
 
+        private IEnumerable<SoaDetailsDto> GetCompanyCustomerDetails()
+        {
+            SoaParams soaParams = new SoaParams
+            {
+                Company_Code = SoaVM.Company_Code,
+                Customer_Number = SoaVM.Customer_Number
+            };
+
+            return _soaDetails.GetResponse(soaParams, SD.Z_FI_SOA_DETAILS);
+        }
+
         #endregion API Calls
+
+        #region Company and Customer Details
+
+        private void GetCompanyCustomerDetailsToVM()
+        {
+            foreach (var item in SoaVM.SoaDetails)
+            {
+                SoaVM.CompanyCode = item.BUKRS;
+                SoaVM.CompanyName = item.BUTXT;
+                SoaVM.CompanysCity = item.CITY1;
+                SoaVM.CompanyStreet = item.STREET;
+                SoaVM.CompanyTelNumber = item.TEL_NUMBER;
+                SoaVM.CompanyTinNumber = item.STCEG;
+                SoaVM.CustomerNumber = item.KUNNR;
+                SoaVM.CustomerName = item.NAME1;
+                SoaVM.CustomerContact = item.CONTACT;
+                SoaVM.CustomerStreet = item.STRAS;
+                SoaVM.CustomerCity = item.ORT01;
+            }
+        }
+
+        #endregion Company and Customer Details
 
         #region Previews Balance
 
@@ -258,8 +347,8 @@ namespace SoaApp.Controllers
             var currentBilling = SoaVM.StatementCurrentMonth
                                     .Where(x =>
                                             (x.DB_CR_IND == "S") &&
-                                            !(x.SP_GL_IND == "C") && 
-                                            !(x.DOC_TYPE == "DZ" || x.DOC_TYPE == "DX"|| x.DOC_TYPE == "DY") &&
+                                            !(x.SP_GL_IND == "C") &&
+                                            !(x.DOC_TYPE == "DZ" || x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY") &&
                                              (x.CURRENCY == "USD"));
             decimal TotalCurrentBills = 0;
 
@@ -319,6 +408,7 @@ namespace SoaApp.Controllers
                                     !(x.SP_GL_IND == "C") &&
                                      (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"));
 
+            // removing distinct
             List<BapiOpenItemDto> allPayments = new List<BapiOpenItemDto>().Distinct().ToList();
 
             foreach (var item in openitems)
@@ -333,14 +423,21 @@ namespace SoaApp.Controllers
 
             var distPayments = allPayments.GroupBy(x => x.DOC_NO).Select(y => y.FirstOrDefault());
 
-
-
             return distPayments.OrderByDescending(x => x.ENTRY_DATE);
+        }
+
+        private IEnumerable<BapiOpenItemDto> GetPaymentsList3()
+        {
+            var payments = SoaVM.StatementCurrentMonth
+                    .Where(x =>
+                        !(x.SP_GL_IND == "C") &&
+                         (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"));
+            return payments.OrderByDescending(x => x.ENTRY_DATE);
         }
 
         private IEnumerable<BapiOpenItemDto> GetPaymentsList()
         {
-            var payments = SoaVM.StatementCurrentMonth
+            var payments = SoaVM.OpenItemsAsOfDate
                     .Where(x =>
                         !(x.SP_GL_IND == "C") &&
                          (x.DOC_TYPE == "DX" || x.DOC_TYPE == "DY" || x.DOC_TYPE == "DZ"));
@@ -422,7 +519,7 @@ namespace SoaApp.Controllers
                                     y.DOC_TYPE == "DM" ||
                                     y.DOC_TYPE == "DH" ||
                                     y.DOC_TYPE == "PA" ||
-                                    y.DOC_TYPE == "PB") && 
+                                    y.DOC_TYPE == "PB") &&
                                     (y.CURRENCY == "PHP"));
             decimal unpaidsPhp = 0;
 
@@ -454,7 +551,7 @@ namespace SoaApp.Controllers
                                     y.DOC_TYPE == "DM" ||
                                     y.DOC_TYPE == "DH" ||
                                     y.DOC_TYPE == "PA" ||
-                                    y.DOC_TYPE == "PB") && 
+                                    y.DOC_TYPE == "PB") &&
                                     (y.CURRENCY == "USD"));
             decimal unpaidsUsd = 0;
 

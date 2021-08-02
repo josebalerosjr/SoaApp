@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SoaApp.Dtos;
+using System.Collections.Generic;
 
 namespace SoaApp.Models.ViewModels
 {
@@ -10,8 +11,7 @@ namespace SoaApp.Models.ViewModels
         public string Customer_Number { get; set; }
         public string Posting_Date { get; set; }
         public string PreviewMonthLastDay { get; set; }
-        public decimal PreviousBalancePhp { get; set; }
-        public decimal PreviousBalanceUsd { get; set; }
+
         public string Date_From { get; set; }
 
         #endregion Parameter details
@@ -21,14 +21,41 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> OpenItemsAsOfDate { get; set; }
         public IEnumerable<BapiOpenItemDto> OpenItemsPreviousMonth { get; set; }
         public IEnumerable<BapiOpenItemDto> StatementCurrentMonth { get; set; }
+        public IEnumerable<BapiOpenItemDto> PaymentsTesting { get; set; }
 
         public decimal TotalSOAUsd { get; set; }
         public decimal TotalSOAPhp { get; set; }
+
+        #region Preview Balance
+
+        public decimal PreviousBalancePhp { get; set; }
+        public decimal PreviousBalanceUsd { get; set; }
+
+        #endregion Preview Balance
+
+        #region Company and Customer details
+
+        public string CompanyCode { get; set; }
+        public string CompanyName { get; set; }
+        public string CompanysCity { get; set; }
+        public string CompanyStreet { get; set; }
+        public string CompanyTelNumber { get; set; }
+        public string CompanyTinNumber { get; set; }
+        public string CustomerNumber { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerContact { get; set; }
+        public string CustomerStreet { get; set; }
+        public string CustomerCity { get; set; }
+        public IEnumerable<SoaDetailsDto> SoaDetails { get; set; }
+
+        #endregion Company and Customer details
 
         #region Billings
 
         public decimal TotalCurrentBillingsUsd { get; set; }
         public decimal TotalCurrentBillingsPhp { get; set; }
+        //public bool BillingUsdCheck { get; set; }
+        //public bool BillingPhpCheck { get; set; }
 
         #endregion Billings
 
@@ -37,6 +64,8 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> PaymentsListItem { get; set; }
         public decimal TotalPaymentsPhp { get; set; }
         public decimal TotalPaymentsUsd { get; set; }
+        //public bool PaymentUsdCheck { get; set; }
+        //public bool PaymentPhpCheck { get; set; }
 
         #endregion Payments
 
@@ -45,6 +74,8 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> UnpaidListItem { get; set; }
         public decimal TotalUnpaidPhp { get; set; }
         public decimal TotalUnpaidUsd { get; set; }
+        //public bool UnpaidUsdCheck { get; set; }
+        //public bool UnpaidPhpCheck { get; set; }
 
         #endregion Unpaid
 
@@ -53,6 +84,8 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> CreditAndDebitList { get; set; }
         public decimal TotalCreditAndDebitUsd { get; set; }
         public decimal TotalCreditAndDebitPhp { get; set; }
+        //public bool CreditDebitUsdCheck { get; set; }
+        //public bool CreditDebitPhpCheck { get; set; }
 
         #endregion Credit and Debit
 
@@ -61,7 +94,16 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> UncollectedCwtList { get; set; }
         public decimal TotalUncollectedCwtPhp { get; set; }
         public decimal TotalUncollectedCwtUsd { get; set; }
+        //public bool UncollectedUsdCheck { get; set; }
+        //public bool UncollectedPhpCheck { get; set; }
 
         #endregion Uncollected CWT
+
+        #region Currency Checker
+
+        public bool UsdChecker { get; set; }
+        public bool PhpChecker { get; set; }
+
+        #endregion Currency Checker
     }
 }

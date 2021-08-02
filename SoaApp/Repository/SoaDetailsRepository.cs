@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace SoaApp.Repository
 {
-    public class BapiRepository : IBapiRepository
+    public class SoaDetailsRepository : ISoaDetailsRepository
     {
-        public List<BapiOpenItemDto> GetResponse(SoaParams soaParams, string uri)
+        public List<SoaDetailsDto> GetResponse(SoaParams soaParams, string uri)
         {
             var SoaJson = JsonConvert.SerializeObject(soaParams);
             var client = new RestClient(uri);
@@ -18,7 +18,7 @@ namespace SoaApp.Repository
             request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
             request.AddHeader("Content-Type", "application/json");
             request.AddParameter("application/json", "[\r\n" + SoaJson + "\r\n]\r\n", ParameterType.RequestBody);
-            IRestResponse<List<BapiOpenItemDto>> response = client.Execute<List<BapiOpenItemDto>>(request);
+            IRestResponse<List<SoaDetailsDto>> response = client.Execute<List<SoaDetailsDto>>(request);
             return response.Data;
         }
     }

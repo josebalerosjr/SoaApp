@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace SoaApp.Repository.IRepository
 {
-    public interface IBapiRepository
+    public interface ISoaDetailsRepository
     {
-        List<BapiOpenItemDto> GetResponse(SoaParams soaParams, string uri);
+        List<SoaDetailsDto> GetResponse(SoaParams soaParams, string uri);
     }
 }

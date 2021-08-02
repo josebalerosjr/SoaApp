@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SoaApp.Models
 {
@@ -10,6 +6,7 @@ namespace SoaApp.Models
     {
         [Key]
         public int Id { get; set; }
+
         public string ADDRNUMBER { get; set; }
         public string DATE_FROM { get; set; }
         public string NATION { get; set; }
@@ -108,7 +105,6 @@ namespace SoaApp.Models
         public string MC_COUNTY { get; set; }
         public string MC_TOWNSHIP { get; set; }
         public string XPCPT { get; set; }
-        public string Address_notes {get;set;}
-
+        public string Address_notes { get; set; }
     }
 }
