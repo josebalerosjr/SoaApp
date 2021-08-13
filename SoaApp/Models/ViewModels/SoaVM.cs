@@ -19,8 +19,8 @@ namespace SoaApp.Models.ViewModels
         public Company Company { get; set; }
         public Customer Customer { get; set; }
         public IEnumerable<BapiOpenItemDto> OpenItemsAsOfDate { get; set; }
-        public IEnumerable<BapiOpenItemDto> OpenItemsPreviousMonth { get; set; }
-        public IEnumerable<BapiOpenItemDto> StatementCurrentMonth { get; set; }
+        public IEnumerable<BapiKeyDateBalanceDto> PreviousBalance { get; set; }
+        public IEnumerable<BapiKeyDateBalanceDto> CurrentBalance { get; set; }
         public IEnumerable<BapiOpenItemDto> PaymentsTesting { get; set; }
 
         public decimal TotalSOAUsd { get; set; }
@@ -52,6 +52,7 @@ namespace SoaApp.Models.ViewModels
 
         #region Billings
 
+        public IEnumerable<BapiOpenItemDto> CurrentBillingsList { get; set; }
         public decimal TotalCurrentBillingsUsd { get; set; }
         public decimal TotalCurrentBillingsPhp { get; set; }
         //public bool BillingUsdCheck { get; set; }
@@ -64,18 +65,17 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> PaymentsListItem { get; set; }
         public decimal TotalPaymentsPhp { get; set; }
         public decimal TotalPaymentsUsd { get; set; }
-        //public bool PaymentUsdCheck { get; set; }
-        //public bool PaymentPhpCheck { get; set; }
 
         #endregion Payments
 
         #region Unpaid
 
-        public IEnumerable<BapiOpenItemDto> UnpaidListItem { get; set; }
+        public IList<BapiOpenItemDto> UnpaidListItem { get; set; }
+        public IList<BapiOpenItemDto> UnpaidListItemNew { get; set; }
+        public IList<BapiOpenItemDto> Partials { get; set; }
+        public IList<BapiOpenItemDto> Unpaids { get; set; }
         public decimal TotalUnpaidPhp { get; set; }
         public decimal TotalUnpaidUsd { get; set; }
-        //public bool UnpaidUsdCheck { get; set; }
-        //public bool UnpaidPhpCheck { get; set; }
 
         #endregion Unpaid
 
@@ -94,8 +94,6 @@ namespace SoaApp.Models.ViewModels
         public IEnumerable<BapiOpenItemDto> UncollectedCwtList { get; set; }
         public decimal TotalUncollectedCwtPhp { get; set; }
         public decimal TotalUncollectedCwtUsd { get; set; }
-        //public bool UncollectedUsdCheck { get; set; }
-        //public bool UncollectedPhpCheck { get; set; }
 
         #endregion Uncollected CWT
 

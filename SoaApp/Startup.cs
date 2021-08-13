@@ -26,6 +26,8 @@ namespace SoaApp
         {
             var Conn_soa = Configuration.GetConnectionString("DevConnection");
 
+            services.AddScoped<IBalancesRepository, BalancesRepository>();
+            services.AddScoped<ITotalAmountRepository, TotalAmountRepository>();
             services.AddScoped<IBapiRepository, BapiRepository>();
             services.AddScoped<ICurrencyChecker, CurrencyChecker>();
             services.AddScoped<ISoaDetailsRepository, SoaDetailsRepository>();

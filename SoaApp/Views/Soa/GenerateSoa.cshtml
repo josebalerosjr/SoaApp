@@ -536,7 +536,7 @@
                         <td></td>
                     }
                 </tr> <!-- UNPAID TRANSACTION HEADER -->
-                @foreach (var unpaid in Model.UnpaidListItem)
+                @foreach (var unpaid in Model.Unpaids.Where(x => x.AMOUNT > 0))
                 {
                     if (unpaid.CURRENCY == "USD")
                     {
@@ -904,6 +904,54 @@
                     }
                 </tr> <!-- TOTAL AMOUNT DUE -->
             </thead>
+        </table>
+        <table border="1">
+            <tr><td>UNPAID LIST</td></tr>
+            <tr>
+                <td>Doc #</td>
+                <td>Amount</td>
+            </tr>
+
+            @foreach (var item in Model.UnpaidListItem)
+            {
+                <tr>
+                    <td>@item.DOC_NO</td>
+                    <td>@item.AMOUNT</td>
+                    <td>@item.INV_REF</td>
+                </tr>
+            }
+        </table>
+        <br />
+        <table border="1">
+            <tr><td>PARTIALS</td></tr>
+            <tr>
+                <td>Doc #</td>
+                <td>Amount</td>
+            </tr>
+            @foreach (var item in Model.Partials)
+            {
+                <tr>
+                    <td>@item.DOC_NO</td>
+                    <td>@item.AMOUNT</td>
+                    <td>@item.INV_REF</td>
+                </tr>
+            }
+        </table>
+        <br />
+        <table border="1">
+            <tr><td>UNPAID</td></tr>
+            <tr>
+                <td>Doc #</td>
+                <td>Amount</td>
+            </tr>
+            @foreach (var item in Model.Unpaids)
+            {
+                <tr>
+                    <td>@item.DOC_NO</td>
+                    <td>@item.AMOUNT</td>
+                    <td>@item.INV_REF</td>
+                </tr>
+            }
         </table>
         <!-- End of Payment Details -->
         <!-- Start of Footer -->
